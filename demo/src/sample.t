@@ -21,29 +21,56 @@
 
 #include "transcriptTools.h"
 
-versionInfo: GameID
-        name = 'transcriptTools Library Demo Game'
-        byline = 'Diegesis & Mimesis'
-        desc = 'Demo game for the transcriptTools library. '
-        version = '1.0'
-        IFID = '12345'
-	showAbout() {
-		"This is a simple test game that demonstrates the features
-		of the transcriptTools library.
-		<.p>
-		Consult the README.txt document distributed with the library
-		source for a quick summary of how to use the library in your
-		own games.
-		<.p>
-		The library source is also extensively commented in a way
-		intended to make it as readable as possible. ";
+versionInfo: GameID;
+gameMain: GameMainDef initialPlayerChar = me;
+
+class Flower: Thing 'flower*flowers' 'flower'
+	"A <<color>> flower. "
+
+	color = nil
+	isEquivalent = true
+	reportName = 'flower'
+
+	initializeThing() {
+		setColor();
+		inherited();
+	}
+
+	setColor() {
+		if(color == nil)
+			color = 'colorless';
+		cmdDict.addWord(self, color, &adjective);
+		name = '<<color>> flower';
+	}
+
+	dobjFor(Take) {
+		verify() {
+			illogical('{You/He} can\'t pick the flowers. ');
+		}
 	}
 ;
-gameMain: GameMainDef
-	initialPlayerChar = me
-	inlineCommand(cmd) { "<b>&gt;<<toString(cmd).toUpper()>></b>"; }
-	printCommand(cmd) { "<.p>\n\t<<inlineCommand(cmd)>><.p> "; }
+
+class RedFlower: Flower color = 'red';
+class BlueFlower: Flower color = 'blue';
+class GreenFlower: Flower color = 'green';
+
+class Pebble: Thing '(small) (round) pebble*pebbles' 'pebble'
+	"A small, round pebble. "
+	isEquivalent = true
 ;
 
 startRoom: Room 'Void' "This is a featureless void.";
 +me: Person;
+// A bunch of flower instances with some other stuff in the middle.
++RedFlower;
++Pebble;
++BlueFlower;
++Pebble;
++GreenFlower;
++Container '(wooden) box' 'box' "A wooden box. "
+	dobjFor(Take) {
+		verify() { illogical('{You/He} can\'t take the box. '); }
+	}
+;
+
+modify syslog initFlags = 'transcript';
