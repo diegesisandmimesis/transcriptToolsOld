@@ -11,22 +11,19 @@ class ReportGrouper: TranscriptPreprocessor
 	toolPriority = 100
 	reportGroupClass = ReportGroup
 
-	_reportGroupIndex = perInstance(new Vector)
-
 	addReportToGroup(report) {
-		local idx;
+		local grp;
 
 		if((report == nil) || !report.ofKind(CommandReport))
 			return(nil);
 
-		if((idx = _reportGroupIndex.indexOf(report.iter_)) == nil) {
-			_reportGroupIndex.appendUnique(report.iter_);
-			parentTools.reportGroups.append(
-				reportGroupClass.createInstance());
-			idx = _reportGroupIndex.length;
+		if((grp = getGroup(report)) == nil) {
+			grp = reportGroupClass.createInstance();
+			grp.transcript = getTranscript();
+			parentTools.reportGroups.append(grp);
 		}
 
-		parentTools.reportGroups[idx].addReport(report);
+		grp.addReport(report);
 
 		return(true);
 	}
@@ -40,18 +37,19 @@ class ReportGrouper: TranscriptPreprocessor
 		});
 	}
 
-	clear() {
-		parentTools.reportGroups.setLength(0);
-		_reportGroupIndex.setLength(0);
-	}
+	clear() { parentTools.reportGroups.setLength(0); }
 ;
 
 class ReportGroup: TranscriptToolsObject
 	groupID = nil
 
+	transcript = nil
+
 	vec = nil
 	isFailure = nil
 	hasImplicit = nil
+
+	getTranscript() { return(transcript); }
 
 	addReport(v) {
 		if((v == nil) || !v.ofKind(CommandReport))
@@ -74,4 +72,26 @@ class ReportGroup: TranscriptToolsObject
 	}
 
 	getReports() { return(vec); }
+
+	indexOfFirstReport() {
+		local t;
+
+		if((vec == nil) || !vec.length)
+			return(nil);
+		if((t = getTranscript()) == nil)
+			return(nil);
+
+		return(t.indexOf(vec[1]));
+	}
+
+	indexOfLastReport() {
+		local t;
+
+		if((vec == nil) || !vec.length)
+			return(nil);
+		if((t = getTranscript()) == nil)
+			return(nil);
+
+		return(t.reports_.indexOf(vec[vec.length]));
+	}
 ;

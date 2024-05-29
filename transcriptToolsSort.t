@@ -21,8 +21,7 @@ class MoveFailuresToEndOfTranscript: TranscriptSorter
 		while(((idx = l.indexWhich({ x: x.isFailure })) != nil)
 			 && (idx < len)) {
 
-			l.append(l[idx]);
-			l.removeElementAt(idx);
+			moveGroup(l[idx], 0);
 
 			len -= 1;
 		}
