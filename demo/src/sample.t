@@ -74,3 +74,4 @@ startRoom: Room 'Void' "This is a featureless void.";
 ;
 
 modify syslog initFlags = 'reportGroup';
+modify transcriptTools active = true;

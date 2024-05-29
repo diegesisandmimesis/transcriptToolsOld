@@ -17,10 +17,26 @@ modify CommandReport
 	dobj_ = nil
 	iobj_ = nil
 
+	reportID = nil
+	reportSummarizer = nil
+
 	construct() {
 		inherited();
 		dobj_ = gDobj;
 		iobj_ = gIobj;
+	}
+
+	getReportSummarizer() {
+		if(reportSummarizer != nil)
+			return(reportSummarizer);
+
+		if((dobj_ == nil) || (dobj_.reportManager == nil))
+			return(nil);
+
+		reportSummarizer = dobj_.reportManager
+			.getReportSummarizer(self);
+
+		return(reportSummarizer);
 	}
 ;
 
@@ -47,4 +63,9 @@ modify TIAction
 		inherited();
 		transcriptToolsAfterActionMain();
 	}
+;
+
+modify Thing
+	reportManager = nil
+	_reportCount = nil
 ;
