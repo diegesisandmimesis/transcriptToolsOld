@@ -15,29 +15,84 @@ transcriptToolsModuleID: ModuleID {
         listingOrder = 99
 }
 
-class TranscriptToolsObject: Syslog
-	syslogID = 'transcriptTools'
+class TranscriptToolsObject: Syslog syslogID = 'transcriptTools';
+
+class TranscriptTool: TranscriptToolsObject
+	parentTools = nil
+
+	initializeTranscriptTool() {
+		if(location == nil) return;
+		location.addTranscriptTool(self);
+	}
+
+	forEachReport(fn) { parentTools.forEachReport(fn); }
+	forEachReportGroup(fn) { parentTools.forEachReportGroup(fn); }
+	checkReport(r) { return(true); }
+
+	preprocess() {}
+	run() {}
+	postprocess() {}
+	clear() {}
 ;
+
+class TranscriptPreprocessor: TranscriptTool;
 
 class TranscriptTools: TranscriptToolsObject
 	active = true
 
-	reportGroupClass = ReportGroup
-
-	_reportGroup = perInstance(new LookupTable())
+	defaultTools = nil
 
 	_transcript = nil
+	_transcriptTools = perInstance(new Vector())
+
+	reportGroups = perInstance(new Vector)
 
 	getActive() { return(active); }
 
 	getTranscript() { return(_transcript ? _transcript : gTranscript); }
 	setTranscript(v) { _transcript = v; }
 
+	initializeTranscriptTools() {
+		addDefaultTranscriptTools();
+		sortTranscriptTools();
+	}
+
+	addDefaultTranscriptTools() {
+		if(defaultTools == nil)
+			return;
+
+		if(!defaultTools.ofKind(Collection))
+			defaultTools = [ defaultTools ];
+
+		defaultTools.forEach(function(o) {
+			addTranscriptTool(o.createInstance());
+		});
+	}
+
+	addTranscriptTool(obj) {
+		if((obj == nil) || !obj.ofKind(TranscriptTool))
+			return(nil);
+
+		_transcriptTools.append(obj);
+		obj.parentTools = self;
+
+		return(true);
+	}
+
+	removeTranscriptTool(obj) { _transcriptTools.removeElement(obj); }
+
+	sortTranscriptTools() {
+		_transcriptTools.sort(true, {
+			a, b: b.toolPriority - a.toolPriority
+		});
+	}
+
 	// TAction and TIActions call us from their afterActionMain().  This
 	// is the main external hook for the report manager logic.
 	afterActionMain() {
 		if(!checkTranscriptTools())
 			return;
+
 		runTranscriptTools();
 	}
 
@@ -54,19 +109,17 @@ class TranscriptTools: TranscriptToolsObject
 	// Main report manager loop.
 	runTranscriptTools() {
 		clear();
-		groupReports();
+		preprocess();
+		run();
+		postprocess();
+forEachReportGroup({ x: x._debugGroup() });
+		clear();
 	}
 
-	clear() {
-		_clearReportGroups();
-	}
-
-	_clearReportGroups() {
-		_reportGroup.keysToList().forEach(function(o) {
-			_reportGroup.removeElement(o);
-		});
-		
-	}
+	preprocess() { forEachTool({ x: x.preprocess() }); }
+	run() { forEachTool({ x: x.run() }); }
+	postprocess() { forEachTool({ x: x.postprocess() }); }
+	clear() { forEachTool({ x: x.clear() }); }
 
 	forEachReport(fn) {
 		local t;
@@ -74,9 +127,13 @@ class TranscriptTools: TranscriptToolsObject
 		if((t = getTranscript()) == nil)
 			return;
 
-		t.reports_.forEach(fn);
+		t.reports_.forEach({ x: (fn)(x) });
 	}
 
+	forEachReportGroup(fn) { reportGroups.forEach({ x: (fn)(x) }); }
+	forEachTool(fn) { _transcriptTools.forEach({ x: (fn)(x) }); }
+
+/*
 	groupReports() {
 		forEachReport(function(o) {
 			if(!checkReport(o))
@@ -104,6 +161,9 @@ class TranscriptTools: TranscriptToolsObject
 			return(nil);
 		return(true);
 	}
+*/
 ;
 
-transcriptTools: TranscriptTools;
+transcriptTools: TranscriptTools
+	defaultTools = static [ ReportGrouper, MoveFailuresToEndOfTranscript ]
+;

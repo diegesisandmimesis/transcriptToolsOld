@@ -50,4 +50,14 @@ modify TranscriptTools
 	}
 ;
 
+modify ReportGroup
+	_debugGroup() {
+		_debug('===REPORT GROUP START===', 'reportGroup');
+		_debug('\tgroupID = <<toString(groupID)>>', 'reportGroup');
+		_debug('\tisFailure = <<toString(isFailure)>>', 'reportGroup');
+		vec.forEach({ x: x._debugReport('reportGroup') });
+		_debug('===REPORT GROUP END===', 'reportGroup');
+	}
+;
+
 #endif // SYSLOG

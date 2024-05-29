@@ -7,7 +7,48 @@
 
 #include "transcriptTools.h"
 
+class ReportGrouper: TranscriptPreprocessor
+	toolPriority = 100
+	reportGroupClass = ReportGroup
+
+	_reportGroupIndex = perInstance(new Vector)
+
+	addReportToGroup(report) {
+		local idx;
+
+		if((report == nil) || !report.ofKind(CommandReport))
+			return(nil);
+
+		if((idx = _reportGroupIndex.indexOf(report.iter_)) == nil) {
+			_reportGroupIndex.appendUnique(report.iter_);
+			parentTools.reportGroups.append(
+				reportGroupClass.createInstance());
+			idx = _reportGroupIndex.length;
+		}
+
+		parentTools.reportGroups[idx].addReport(report);
+
+		return(true);
+	}
+
+	preprocess() {
+		forEachReport(function(report) {
+			if(!checkReport(report))
+				return;
+
+			addReportToGroup(report);
+		});
+	}
+
+	clear() {
+		parentTools.reportGroups.setLength(0);
+		_reportGroupIndex.setLength(0);
+	}
+;
+
 class ReportGroup: TranscriptToolsObject
+	groupID = nil
+
 	vec = nil
 	isFailure = nil
 	hasImplicit = nil
@@ -15,6 +56,9 @@ class ReportGroup: TranscriptToolsObject
 	addReport(v) {
 		if((v == nil) || !v.ofKind(CommandReport))
 			return(nil);
+
+		if((groupID == nil) && (v.iter_ != nil))
+			groupID = v.iter_;
 
 		if(vec == nil)
 			vec = new Vector(gTranscript.reports_.length);
@@ -30,21 +74,4 @@ class ReportGroup: TranscriptToolsObject
 	}
 
 	getReports() { return(vec); }
-
-	showReports() {
-		if(vec == nil)
-			return;
-		vec.forEach(function(o) {
-			_debug('\t<<toString(o)>>');
-			_debug('\t\taction = <<toString(o.action_)>>');
-			_debug('\t\tisFailure = <<toString(o.isFailure)>>');
-			if(o.dobj_) {
-				if(o.dobj_.location)
-					_debug('\t\tdobj_ = <<o.dobj_.name>>
-						@ <<o.dobj_.location.name>>');
-				else
-					_debug('\t\tdobj_ = <<o.dobj_.name>>');
-			}
-		});
-	}
 ;
