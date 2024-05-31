@@ -374,6 +374,10 @@ class ReportManager: TranscriptToolsWidget
 ;
 
 class GeneralReportManager: ReportManager
+	reportManagerDefaultSummaries = static [
+		TakeSummary
+	]
+
 	matchReportDobj(obj) { return(obj != nil); }
 ;
 

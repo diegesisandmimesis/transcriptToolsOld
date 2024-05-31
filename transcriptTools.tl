@@ -8,5 +8,7 @@ source: reportManager/reportManager.t
 source: reportManager/reportSummary.t
 source: reportManager/reportName.t
 source: reportManager/distinguisher.t
+source: reportManager/defaultReports.t
+source: transcriptToolsLister.t
 source: transcriptToolsPreinit.t
 source: transcriptToolsDebug.t

@@ -95,8 +95,21 @@ class TranscriptTools: TranscriptToolsWidget
 		sortTranscriptTools();
 	}
 
+	getTranscriptTool(cls) {
+		local i;
+
+		for(i = 1; i <= _transcriptTools.length; i++) {
+			if(_transcriptTools[i].ofKind(cls))
+				return(_transcriptTools[i]);
+		}
+
+		return(nil);
+	}
+
 	// Set up our default widgets
 	addDefaultTranscriptTools() {
+		local obj;
+
 		if(defaultTools == nil)
 			return;
 
@@ -104,7 +117,12 @@ class TranscriptTools: TranscriptToolsWidget
 			defaultTools = [ defaultTools ];
 
 		defaultTools.forEach(function(o) {
-			addTranscriptTool(o.createInstance());
+			if(getTranscriptTool(o))
+				return;
+
+			obj = o.createInstance();
+			obj.location = self;
+			obj.initializeTranscriptTool();
 		});
 	}
 

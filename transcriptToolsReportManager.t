@@ -25,8 +25,54 @@ class DistinguisherData: object
 class TranscriptReportManager: TranscriptTool
 	toolPriority = 500
 
+	defaultReportManagers = static [ GeneralReportManager ]
+	_reportManagers = nil
+
 	_timestamp = nil
 	_distinguisherFlag = nil
+
+	getReportManager(cls) {
+		local i;
+
+		if(_reportManagers == nil)
+			return(nil);
+
+		for(i = 1; i <= _reportManagers.length; i++) {
+			if(_reportManagers[i].ofKind(cls))
+				return(_reportManagers[i]);
+		}
+
+		return(nil);
+	}
+
+	initializeTranscriptTool() {
+		inherited();
+		addDefaultReportManagers();
+	}
+
+	addReportManager(obj) {
+		if(_reportManagers == nil)
+			_reportManagers = new Vector();
+		_reportManagers.append(obj);
+	}
+
+	addDefaultReportManagers() {
+		local obj;
+
+		if(defaultReportManagers == nil)
+			return;
+		if(!defaultReportManagers.ofKind(Collection))
+			defaultReportManagers = [ defaultReportManagers ];
+
+		defaultReportManagers.forEach(function(o) {
+			if(getReportManager(o))
+				return;
+			obj = o.createInstance();
+			obj.location = self;
+			obj.initializeReportManager();
+			addReportManager(obj);
+		});
+	}
 
 	getDistinguisherFlag() { return(_distinguisherFlag == true); }
 	setDistinguisherFlag() { _distinguisherFlag = true; }
@@ -81,6 +127,23 @@ class TranscriptReportManager: TranscriptTool
 
 		if((r = report.getReportSummarizer()) != nil)
 			return(r);
+
+		r = getReportSummarizer(report);
+
+		return(r);
+	}
+
+	getReportSummarizer(report) {
+		local i, r;
+
+		if(_reportManagers == nil)
+			return(nil);
+
+		for(i = 1; i <= _reportManagers.length; i++) {
+			if((r = _reportManagers[i].getReportSummarizer(report))
+				!= nil)
+				return(r);
+		}
 
 		return(nil);
 	}

@@ -29,9 +29,22 @@ flowerReportManager: ReportManager
 ;
 +ReportSummary @ExamineAction
 	summarize(data) {
-		return('It\'s <<objectLister.makeSimpleList(data.objs)>>. ');
+		return('It\'s <<equivalentLister
+			.makeSimpleList(data.objs)>>. ');
 	}
 ;
+
+/*
+pebbleReportManager: ReportManager
+	reportManagerFor = Pebble
+;
++ReportSummary @ExamineAction
+	summarize(data) {
+		return('It\'s <<spellInt(data.count)>> small, round
+			pebbles. ');
+	}
+;
+*/
 
 class Flower: Thing 'flower*flowers' 'flower'
 	"A <<color>> flower. "
@@ -66,6 +79,12 @@ class GreenFlower: Flower color = 'green';
 class Pebble: Thing '(small) (round) pebble*pebbles' 'pebble'
 	"A small, round pebble. "
 	isEquivalent = true
+	dobjFor(Examine) {
+		summarize(data) {
+			return('It\'s <<spellInt(data.count)>> small, round
+				pebbles. ');
+		}
+	}
 ;
 
 startRoom: Room 'Void' "This is a featureless void.";
