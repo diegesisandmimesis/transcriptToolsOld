@@ -34,7 +34,6 @@ flowerReportManager: ReportManager
 	}
 ;
 
-/*
 pebbleReportManager: ReportManager
 	reportManagerFor = Pebble
 ;
@@ -44,7 +43,6 @@ pebbleReportManager: ReportManager
 			pebbles. ');
 	}
 ;
-*/
 
 class Flower: Thing 'flower*flowers' 'flower'
 	"A <<color>> flower. "
@@ -94,12 +92,15 @@ startRoom: Room 'Void' "This is a featureless void.";
 +Pebble;
 +BlueFlower;
 +Pebble;
-+GreenFlower;
 +Container '(wooden) box' 'box' "A wooden box. "
 	dobjFor(Take) {
 		verify() { illogical('{You/He} can\'t take the box. '); }
 	}
 ;
+++Pebble;
+++RedFlower;
+++BlueFlower;
++GreenFlower;
 
 modify syslog initFlags = 'reportGroup';
 modify transcriptTools active = true;

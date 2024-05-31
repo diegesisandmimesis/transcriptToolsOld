@@ -188,6 +188,7 @@ class TranscriptReportManager: TranscriptTool
 			// Get the distinguisher for this report
 			dist = getReportDistinguisher(report.dobj_, 1);
 
+//aioSay('\n\tdistinguisher = <<toString(dist)>> for <<report.dobj_.name>> @ <<report.dobj_.location.name>>\n ');
 			// If we haven't seen this distinguisher before,
 			// create a new distinguisher data object for
 			// it
@@ -216,19 +217,20 @@ class TranscriptReportManager: TranscriptTool
 
 		d = new ReportSummaryData(data.reports);
 		r = createSummaryReport(d, summarizer.summarize(d));
-		//t.reports_.append(r);
 		replaceReports(data.reports, r);
 	}
 
-	createSummaryReport(data, msg) {
+	createSummaryReport(data, msg, dist?) {
 		local txt;
 
 		txt = new StringBuffer();
 
 		if(getDistinguisherFlag() == true) {
+			if(dist == nil)
+				dist = getReportDistinguisher(data.dobj,
+					data.vec.length);
 			txt.append('<./p0>\n<.announceObj>');
-			txt.append(getReportDistinguisher(data.dobj,
-				data.vec.length));
+			txt.append(dist);
 			txt.append(':<./announceObj> <.p0>');
 		}
 		txt.append(msg);
@@ -244,6 +246,8 @@ class TranscriptReportManager: TranscriptTool
 			&& obj.reportManager.reportManagerAnnounceText)
 			return(obj.reportManager.reportManagerAnnounceText);
 
+//local d = obj.getBestDistinguisher(gAction.getResolvedObjList(DirectObject));
+//aioSay('\n<<obj.name>> using <<toString(d)>>\n ');
 		return(obj.getBestDistinguisher(gAction
 			.getResolvedObjList(DirectObject))
 			.reportName(obj, n));

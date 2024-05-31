@@ -68,6 +68,7 @@ modify TIAction
 ;
 
 modify Thing
+	reportName = (name)
 	reportManager = nil
 	_reportCount = nil
 ;

@@ -11,6 +11,7 @@
 // Now we modify the distinguishers.
 // We add an "aOrCountName" method to each, which we use for 
 modify nullDistinguisher
+	canDistinguish(a, b) { return(a.reportName != b.reportName); }
 	aOrCountName(obj, n) {
 		return((n == 1) ? name(obj) : obj.countName(n));
 	}
@@ -23,6 +24,19 @@ modify nullDistinguisher
 ;
 
 modify basicDistinguisher
+	canDistinguish(a, b) {
+		local na, nb;
+
+		if(!(a.isEquivalent && b.isEquivalent))
+			return(nil);
+
+		na = ((a.reportName == a.equivalenceKey) ? a.equivalenceKey
+			: a.reportName);
+		nb = ((b.reportName == b.equivalenceKey) ? b.equivalenceKey
+			: b.reportName);
+
+		return(na != nb);
+	}
 	aOrCountName(obj, n) {
 		return((n == 1) ? name(obj) : obj.countDisambigName(n));
 	}
