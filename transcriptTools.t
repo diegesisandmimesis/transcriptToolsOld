@@ -32,6 +32,8 @@ class TranscriptTool: TranscriptToolsWidget
 	// The TranscriptTools instance we're a part of
 	parentTools = nil
 
+	toolPriority = 900
+
 	// Called at preinit
 	initializeTranscriptTool() {
 		if(location == nil) return;
@@ -44,7 +46,10 @@ class TranscriptTool: TranscriptToolsWidget
 	checkReport(r) { return(true); }
 	getTranscript() { return(parentTools.getTranscript()); }
 	getGroup(report) { return(parentTools.getGroup(report)); }
-	moveGroup(grp, idx) { return(parentTools.moveGroup(grp, idx)); }
+	moveGroup(grp, idx?) { return(parentTools.moveGroup(grp, idx)); }
+	moveReport(r, dst?, t?) { return(parentTools.moveReport(r, dst, t)); }
+	replaceReports(v0, v1, t?)
+		{ return(parentTools.replaceReports(v0, v1, t)); }
 
 	// Wrappers for the base methods, only calls them when we're active
 	_preprocess() { if(getActive()) preprocess(); }
@@ -278,8 +283,44 @@ class TranscriptTools: TranscriptToolsWidget
 
 		return(moveTo);
 	}
+
+	replaceReports(oldReports, newReports, t?) {
+		local idx, min;
+
+		if((t == nil) && ((t = getTranscript()) == nil))
+			return(nil);
+
+		if((oldReports == nil) || (newReports == nil))
+			return(nil);
+		if(!oldReports.ofKind(Collection))
+			oldReports = [ oldReports ];
+		if(!newReports.ofKind(Collection))
+			newReports = [ newReports ];
+
+		min = nil;
+		oldReports.forEach(function(o) {
+			if((idx = t.reports_.indexOf(o)) == nil)
+				return;
+			if((min == nil) || (idx < min))
+				min = idx;
+		});
+		oldReports.forEach({ x: t.reports_.removeElement(x) });
+		if((min == nil) || (min > t.reports_.length + 1))
+			min = t.reports_.length + 1;
+			
+		newReports.forEach(function(o) {
+			t.reports_.insertAt(min, o);
+			min += 1;
+		});
+
+		return(true);
+	}
 ;
 
 transcriptTools: TranscriptTools
-	defaultTools = static [ ReportGrouper, MoveFailuresToEndOfTranscript ]
+	defaultTools = static [
+		ReportGrouper,
+		MoveFailuresToEndOfTranscript,
+		TranscriptReportManager
+	]
 ;

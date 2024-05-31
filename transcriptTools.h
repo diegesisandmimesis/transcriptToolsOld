@@ -17,6 +17,35 @@
 	(gIsReport(r) ? (r.dobj_ ? r.dobj_.ofKind(cls) : nil) : nil)
 #define gReportAction(r) (gIsReport(r) ? r.action_ : nil)
 
+#ifndef gTurn
+#define gTurn (libGlobal.totalTurns)
+#endif // gTurn
+
+#undef DefineTActionSub
+#define DefineTActionSub(name, cls) \
+	DefineAction(name, cls) \
+	verDobjProp = &verifyDobj##name \
+	remapDobjProp = &remapDobj##name \
+	preCondDobjProp = &preCondDobj##name \
+	checkDobjProp = &checkDobj##name \
+	actionDobjProp  = &actionDobj##name \
+	summarizeDobjProp = &summarizeDobj##name \
+
+#undef DefineTIActionSub
+#define DefineTIActionSub(name, cls) \
+	DefineAction(name, cls) \
+	verDobjProp = &verifyDobj##name \
+	verIobjProp = &verifyIobj##name \
+	remapDobjProp = &remapDobj##name \
+	remapIobjProp = &remapIobj##name \
+	preCondDobjProp = &preCondDobj##name \
+	preCondIobjProp = &preCondIobj##name \
+	checkDobjProp = &checkDobj##name \
+	checkIobjProp = &checkIobj##name \
+	actionDobjProp  = &actionDobj##name \
+	actionIobjProp = &actionIobj##name \
+	summarizeDobjProp = &summarizeDobj##name
+
 ReportSummary template @action;
 
 #define TRANSCRIPT_TOOLS_H

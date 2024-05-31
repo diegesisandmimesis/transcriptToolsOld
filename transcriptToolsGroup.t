@@ -45,6 +45,8 @@ class ReportGroup: TranscriptToolsObject
 
 	transcript = nil
 
+	reportSummarizer = nil
+
 	vec = nil
 	isFailure = nil
 	hasImplicit = nil
@@ -73,6 +75,8 @@ class ReportGroup: TranscriptToolsObject
 
 	getReports() { return(vec); }
 
+	forEachReport(fn) { vec.forEach({ x: (fn)(x) }); }
+
 	indexOfFirstReport() {
 		local t;
 
@@ -93,5 +97,20 @@ class ReportGroup: TranscriptToolsObject
 			return(nil);
 
 		return(t.reports_.indexOf(vec[vec.length]));
+	}
+
+	getReportSummarizer() {
+		local r, s;
+
+		if(vec == nil)
+			return(nil);
+
+		r = nil;
+		vec.forEach(function(o) {
+			if((s = o.getReportSummarizer()) != nil)
+				r = s;
+		});
+
+		return(r);
 	}
 ;

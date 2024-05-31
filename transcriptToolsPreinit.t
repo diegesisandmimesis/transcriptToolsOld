@@ -9,6 +9,12 @@
 
 transcriptToolsPreinit: PreinitObject
 	execute() {
+		forEachInstance(ReportSummary, function(o) {
+			o.initializeReportSummary();
+		});
+		forEachInstance(ReportManager, function(o) {
+			o.initializeReportManager();
+		});
 		forEachInstance(TranscriptTool, function(o) {
 			o.initializeTranscriptTool();
 		});

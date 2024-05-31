@@ -41,6 +41,8 @@ modify CommandReport
 ;
 
 modify Action
+	summarizeDobjProp = nil
+
 	transcriptToolsAfterActionMain() {
 		if(parentAction == nil)
 			transcriptTools.afterActionMain();

@@ -8,369 +8,181 @@
 
 #include "transcriptTools.h"
 
-// The report manager object.
-class ReportManager: TranscriptToolsWidget
-	// What kind of object we're a manager for
-	reportManagerFor = nil
+class SummarizerData: object
+	summarizer = nil
+	reports = perInstance(new Vector())
 
-	// Minimum number of reports needed to summarize.
-	// If an action doesn't produce at least this many, we won't
-	// do anything.
-	minSummaryLength = 2
+	construct(s) { summarizer = s; }
+;
 
-	// Announcement text for actions where there's a mixture of
-	// summarized and non-summarized reports.  For example, if
-	// we have a pebble and three balls and we're summarizing the
-	// balls but not the pebble, we'll get something like:
-	//
-	//	>X ALL
-	//	pebble: A small, round pebble.
-	//	foo: It's a red ball, a blue ball, and a green ball.
-	//
-	// This controls what text is used for "foo" in the example above.
-	// If nil, then no announcement text will be used (and the summary
-	// will just be listed in a line by itself).
-	reportManagerAnnounceText = nil
+class DistinguisherData: object
+	distinguisher = nil
+	reports = perInstance(new Vector())
 
-	// An optional list of ReportSummary classes to add to the report
-	// manager.
-	// Each summary handles a kind of Action, so if we have a list
-	// default summaries we go through the list of summaries already
-	// declared on the report manager and add a default for any
-	// Action that isn't already handled.
-	reportManagerDefaultSummaries = nil
+	construct(d) { distinguisher = d; }
+;
 
-	// The TranscriptTools we're part of
-	parentTools = nil
+class TranscriptReportManager: TranscriptTool
+	toolPriority = 500
 
-	// List of our summary objects.
-	_reportManagerSummary = perInstance(new Vector())
-
-	// Flag to indicate whether or not we need object distinguisher
-	// announcements.
+	_timestamp = nil
 	_distinguisherFlag = nil
 
-	// Preinit method.
-	initializeReportManager() {
-		initializeReportManagerFor();
-		initializeReportManagerDefaultSummaries();
-	}
+	getDistinguisherFlag() { return(_distinguisherFlag == true); }
+	setDistinguisherFlag() { _distinguisherFlag = true; }
 
-	// Go through all the objects we're the report manager for and
-	// make sure they know about us.
-	initializeReportManagerFor() {
-		if(reportManagerFor == nil) {
-			reportManagerFor = [];
+	run() {
+		local t, vec;
+
+		if(_timestamp == gTurn)
 			return;
-		}
+		_timestamp = gTurn;
 
-		if(!reportManagerFor.ofKind(Collection))
-			reportManagerFor = [ reportManagerFor ];
+		_distinguisherFlag = nil;
 
-		reportManagerFor.forEach(function(cls) {
-			forEachInstance(cls, function(o) {
-				o.reportManager = self;
-			});
-		});
-	}
-
-	// Check to see if there are any default summaries that we don't
-	// already have copies of.
-	initializeReportManagerDefaultSummaries() {
-		local l;
-
-		// No default summaries, nothing to do.
-		if(reportManagerDefaultSummaries == nil)
+		if((t = getTranscript()) == nil)
 			return;
 
-		// Make sure the list of defaults is list-ish.
-		if(!reportManagerDefaultSummaries.ofKind(Collection))
-			reportManagerDefaultSummaries
-				= [ reportManagerDefaultSummaries ];
+		// Get a list of all the reports we want to summarize,
+		// grouped by the summarizer that wants to summarize them.
+		vec = assignSummarizers();
 
-		// This will hold the summaries we need to add.
-		l = new Vector(reportManagerDefaultSummaries.length);
-
-		// Go through the list of defaults, checking to see
-		// if we already have a summary for its action.
-		reportManagerDefaultSummaries.forEach(function(o) {
-			// If we already have a summary for this
-			// action, bail.
-			if(getSummaryForAction(o.action))
-				return;
-
-			// Remember that we need to add this default.
-			l.appendUnique(o);
-		});
-
-		// Go through our list of defaults we don't have,
-		// adding them.
-		l.forEach(function(o) {
-			addReportManagerSummary(o.createInstance());
-		});
-	}
-
-	// Returns the summary for the given action, if we have one.
-	getSummaryForAction(act) {
-		local i;
-
-		for(i = 1; i <= _reportManagerSummary.length; i++) {
-			if(_reportManagerSummary[i].matchAction(act))
-				return(_reportManagerSummary[i]);
-		}
-
-		return(nil);
-	}
-
-	// Add a summary to our list.
-	addReportManagerSummary(obj) {
-		// Make sure it's valid.
-		if((obj == nil) || !obj.ofKind(ReportSummary))
-			return(nil);
-
-		// Add it.
-		_reportManagerSummary.appendUnique(obj);
-
-		// Have it remember us.
-		obj.reportManager = self;
-
-		return(true);
-	}
-
-	getDistinguisherFlag() {
-		return(parentTools ? parentTools._distinguisherFlag == true
-			: nil);
-	}
-
-	getReportSummarizer(report) {
-		local i;
-
-		if(!matchReportDobj(report.dobj_))
-			return(nil);
-
-		for(i = 1; i <= _reportManagerSummary.length; i++) {
-			if(_reportManagerSummary[i].isImplicit == true)
-				continue;
-			if(_reportManagerSummary[i].acceptReport(report))
-				return(_reportManagerSummary[i]);
-		}
-
-		return(nil);
-	}
-
-	matchReportDobj(obj) {
-		local i;
-
-		if(obj == nil)
-			return(nil);
-
-		for(i = 1; i <= reportManagerFor.length; i++) {
-			if(obj.ofKind(reportManagerFor[i]))
-				return(true);
-		}
-
-		return(nil);
-	}
-
-	matchReportAction(act) {
-		local i;
-
-		for(i = 1; i <= _reportManagerSummary.length; i++) {
-			if(_reportManagerSummary[i].matchAction(act) == true)
-				return(true);
-		}
-
-		return(nil);
-	}
-
-	matchReportFailure(report) {
-		local i;
-
-		for(i = 1; i <= _reportManagerSummary.length; i++) {
-			if(_reportManagerSummary[i].isFailure
-				== report.isFailure)
-				return(true);
-		}
-
-		return(nil);
-	}
-
-	// Wrapper for the main checkReport() method.
-	// This is where we look at a report and decide whether or not
-	// we want to summarize it.
-	_checkReport(report) {
-		// Make sure the report is part of the action.
-		if(report.action_ != gAction)
-			return(nil);
-
-		if(report.ofKind(CommandReportSummary))
-			return(nil);
-
-		// See if the report involves a kind of object we're
-		// the report manager for.
-		if(!matchReportDobj(report.dobj_))
-			return(nil);
-
-		// See if we have a summary that matches the action AND
-		// failure status of the report.
-		if(!matchReportAction(report.action_))
-			return(nil);
-
-		if(!matchReportFailure(report))
-			return(nil);
-
-		// Call the "real" method.
-		if(checkReport(report) != true)
-			return(nil);
-
-		return(true);
-	}
-
-	// Decide whether or not we're going to summarize the given report.
-	// To be overwritten by instances.
-	checkReport(report) { return(true); }
-
-	setDistinguisherFlag() {}
-
-	// Basic distinguisher checks.
-	_checkDistinguishers() {
-		// If all the reports for the current action aren't being
-		// summarized then we need to add object distinguishers.
-		if(totalReportCount() != summarizedReportCount())
-			setDistinguisherFlag();
-
-		if(checkDistinguishers() == true)
-			setDistinguisherFlag();
-	}
-
-	// For instances' bespoke distinguisher checks.
-	// Should return true if the distinguisher flag should be set,
-	// nil otherwise.
-	checkDistinguishers() { return(nil); }
-
-	// Handle summarizing the reports passed to us in the vector.
-	summarizeReports(vec) {
-		local d, txt, s;
-
-		//_checkDistinguishers();
-
-		// Create a string buffer to hold the summary.
-		txt = new StringBuffer();
-
-		s = vec[1].reportSummarizer;
-		d = new ReportSummaryData(vec);
-		tweakReportSummaryData(d);
-		formatReport(vec, s._summarize(d), txt);
-
-		return(toString(txt));
-	}
-
-	// General method to adjust the data object that will be used
-	// for a summary.
-	tweakReportSummaryData(data) {
-		if((data == nil) || !data.ofKind(ReportSummaryData))
+		// Got nuthin, got nuthin to do
+		if(vec.length < 1)
 			return;
 
-		if((data.dobj = getReportDobj(data)) != nil)
-			data.dobj._reportCount = data.count;
-	}
-
-	// Basic dobj selecting method.  This assumes that the objects
-	// are equivalent and so any one can be used.  Designed to
-	// be overwritten by instances if something more elaborate
-	// is needed (like using an object that's not even in the
-	// reports).
-	getReportDobj(data) {
-		if((data.objs == nil) || (data.objs.length < 1))
-			return(nil);
-
-		return(data.objs[1]);
-	}
-
-	// Report sorter.
-	// We accept an unsorted vector of reports, and we return a
-	// a vector of vectors, where each element is a vector of reports
-	// to summarize together.
-	sortReports(vec) {
-		local dist, idx, l, vv;
-
-		l = new Vector(vec.length);
-		vv = new Vector(8);
-
-		vec.forEach(function(o) {
-			dist = getReportDistinguisher(o.dobj_, 1);
-
-			if((idx = l.indexOf(dist)) == nil) {
-				l.appendUnique(dist);
-				vv.append(new Vector());
-				idx = l.length;
-			}
-
-			vv[idx].append(o);
-		});
-
-		if(vv.length > 1)
+		// If we have more than one bunch of reports to summarize,
+		// we'll use distinguishers to distinguish them.
+		if(vec.length > 1)
 			setDistinguisherFlag();
 
-		return(vv);
+		if(getTotalDobjCount() != getSummarizedDobjCount(vec))
+			setDistinguisherFlag();
+
+		vec.forEach({ x: handleSummary(x, t) });
 	}
 
-	formatReport(vec, summary, txt) {
-		if(getDistinguisherFlag() == true) {
-			txt.append('<./p0>\n<.announceObj>');
-			txt.append(getReportDistinguisher(vec[1].dobj_,
-				vec.length));
-			txt.append(':<./announceObj> <.p0>');
-		}
-		txt.append(summary);
-	}
-
-	getReportDistinguisher(obj, n) {
-		if(reportManagerAnnounceText)
-			return(reportManagerAnnounceText);
-		return(obj.getBestDistinguisher(
-			gAction.getResolvedObjList(DirectObject))
-			.reportName(obj, n));
-	}
-
-	// Returns the total number of reports for the current action
-	// (including ones we're not going to summarize).
-	totalReportCount() {
+	getTotalDobjCount() {
 		return((gAction && gAction.dobjList_)
 			? gAction.dobjList_.length : 0);
 	}
 
-	// Returns the number of reports we're summarizing.
-	summarizedReportCount() {
+	getSummarizedDobjCount(vec) {
 		local n;
 
-		if((gAction == nil) || (gAction.dobjList_ == nil))
-			return(0);
-
 		n = 0;
-		gAction.dobjList_.forEach(function(o) {
-			if(o.obj_.reportManager != self)
-				return;
-			n += 1;
-		});
-
+		vec.forEach({ x: n += x.reports.length });
 		return(n);
 	}
 
-	// See if we handle the given action type.
-	reportManagerMatchAction(act) {
-		local i;
+	// Figure out if anyone wants to summarize this report
+	assignSummarizer(report) {
+		local r;
 
-		for(i = 1; i <= _reportManagerSummary.length; i++) {
-			if(_reportManagerSummary[i].matchAction(act)) {
-				return(true);
-			}
-		}
+		if((r = report.getReportSummarizer()) != nil)
+			return(r);
 
 		return(nil);
 	}
-;
 
-class TranscriptReportManager: ReportManager
-	matchReportDobj(obj) { return(obj != nil); }
+	assignSummarizers() {
+		local o, s, vec;
+
+		vec = new Vector(8);
+
+		// Go through the list of reports, checking to see if
+		// there's a summarizer that wants to summarize it.
+		forEachReport(function(report) {
+			// No summarizer, nothing to do
+			if((s = assignSummarizer(report)) == nil)
+				return;
+
+			// If we haven't seen this summarizer before,
+			// create a new summary data object for it
+			if((o = vec.valWhich({
+				x: x.summarizer == s
+			})) == nil) {
+				vec.append(new SummarizerData(s));
+				o = vec[vec.length];
+			}
+
+			// Add this report to the reports for this summarizer
+			o.reports.append(report);
+		});
+
+		return(vec);
+	}
+
+	// First arg is a SummarizerData instance, second is the transcript
+	// we're working on
+	handleSummary(data, t) {
+		local dist, o, vec;
+
+		vec = new Vector();
+
+		// Go through all the reports for this summarizer
+		data.reports.forEach(function(report) {
+			// Get the distinguisher for this report
+			dist = getReportDistinguisher(report.dobj_, 1);
+
+			// If we haven't seen this distinguisher before,
+			// create a new distinguisher data object for
+			// it
+			if((o = vec.valWhich({
+				x: x.distinguisher == dist
+			})) == nil) {
+				vec.append(new DistinguisherData(dist));
+				o = vec[vec.length];
+			}
+
+			// Add this report to the reports for this
+			// distinguisher
+			o.reports.append(report);
+		});
+
+		// If we have more than one distinguisher's worth of
+		// reports, we (obviously) want to use them
+		if(vec.length > 1)
+			setDistinguisherFlag();
+
+		vec.forEach({ x: _handleSummary(data.summarizer, x, t) });
+	}
+
+	_handleSummary(summarizer, data, t) {
+		local d, r;
+
+		d = new ReportSummaryData(data.reports);
+		r = createSummaryReport(d, summarizer.summarize(d));
+		//t.reports_.append(r);
+		replaceReports(data.reports, r);
+	}
+
+	createSummaryReport(data, msg) {
+		local txt;
+
+		txt = new StringBuffer();
+
+		if(getDistinguisherFlag() == true) {
+			txt.append('<./p0>\n<.announceObj>');
+			txt.append(getReportDistinguisher(data.dobj,
+				data.vec.length));
+			txt.append(':<./announceObj> <.p0>');
+		}
+		txt.append(msg);
+
+		return(new CommandReportSummary(toString(txt)));
+	}
+
+	getReportDistinguisher(obj, n) {
+		if(obj == nil)
+			return(nil);
+
+		if(obj.reportManager
+			&& obj.reportManager.reportManagerAnnounceText)
+			return(obj.reportManager.reportManagerAnnounceText);
+
+		return(obj.getBestDistinguisher(gAction
+			.getResolvedObjList(DirectObject))
+			.reportName(obj, n));
+	}
 ;

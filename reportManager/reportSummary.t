@@ -1,6 +1,6 @@
 #charset "us-ascii"
 //
-// transcriptToolsReportSummary.t
+// reportSummary.t
 //
 #include <adv3.h>
 #include <en_us.h>
@@ -86,6 +86,7 @@ class ReportSummary: TranscriptToolsObject
 
 	reportSummaryMessageParams(obj?) {}
 
+/*
 	summarizeReports(vec) {
 		local txt;
 
@@ -95,6 +96,10 @@ class ReportSummary: TranscriptToolsObject
 			txt = '';
 
 		return(commandReportSummaryClass.createInstance(txt));
+	}
+*/
+	summarizeReports(vec) {
+		return(_summarize(new ReportSummaryData(vec)));
 	}
 ;
 
