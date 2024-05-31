@@ -2,6 +2,7 @@ name: transcriptTools Library
 source: transcriptTools.t
 source: transcriptToolsMods.t
 source: transcriptToolsGroup.t
+source: transcriptToolsMark.t
 source: transcriptToolsSort.t
 source: transcriptToolsReportManager.t
 source: reportManager/reportManager.t

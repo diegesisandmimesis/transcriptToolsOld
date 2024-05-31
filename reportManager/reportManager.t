@@ -375,7 +375,15 @@ class ReportManager: TranscriptToolsWidget
 
 class GeneralReportManager: ReportManager
 	reportManagerDefaultSummaries = static [
-		TakeSummary
+		TakeSummary,
+		TakeFromSummary,
+		DropSummary,
+		PutOnSummary,
+		PutInSummary,
+		PutUnderSummary,
+		PutBehindSummary,
+
+		TakeFailedSummary
 	]
 
 	matchReportDobj(obj) { return(obj != nil); }

@@ -38,9 +38,15 @@ class ReportSummaryData: object
 		if(dobj)
 			dobj._reportCount = count;
 	}
+
+	listNames() { return(equivalentLister.makeSimpleList(objs)); }
+	listNamesWithAnd() { return(listNames()); }
+	listNamesWithOr() { return(equivalentOrLister.makeSimpleList(objs)); }
 ;
 
 class ReportSummary: TranscriptToolsObject
+	active = true
+
 	action = nil
 
 	reportManager = nil
@@ -48,6 +54,9 @@ class ReportSummary: TranscriptToolsObject
 	isImplicit = nil
 
 	commandReportSummaryClass = CommandReportSummary
+
+	getActive() { return(active == true); }
+	setActive(v) { active = (v ? true : nil); }
 
 	initializeReportSummary() {
 		if(location == nil)
@@ -61,6 +70,9 @@ class ReportSummary: TranscriptToolsObject
 	}
 
 	matchAction(act) {
+		if(!getActive())
+			return(nil);
+
 		if((act == nil) || (action == nil))
 			return(nil);
 
@@ -68,6 +80,8 @@ class ReportSummary: TranscriptToolsObject
 	}
 
 	acceptReport(report) {
+		if(!getActive())
+			return(nil);
 		if(report == nil)
 			return(nil);
 		if(!matchAction(report.action_))
@@ -97,10 +111,10 @@ class ReportSummary: TranscriptToolsObject
 
 		return(commandReportSummaryClass.createInstance(txt));
 	}
-*/
 	summarizeReports(vec) {
 		return(_summarize(new ReportSummaryData(vec)));
 	}
+*/
 ;
 
 class FailureSummary: ReportSummary

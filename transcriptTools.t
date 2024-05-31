@@ -338,6 +338,7 @@ class TranscriptTools: TranscriptToolsWidget
 transcriptTools: TranscriptTools
 	defaultTools = static [
 		ReportGrouper,
+		MarkFailures,
 		MoveFailuresToEndOfTranscript,
 		TranscriptReportManager
 	]
