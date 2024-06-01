@@ -122,7 +122,7 @@ class ReportGroup: TranscriptToolsObject
 		return(t.reports_.indexOf(vec[vec.length]));
 	}
 
-	isReportIn(report) {
+	getReportIndex(report) {
 		if(vec == nil)
 			return(nil);
 		return(vec.indexOf(report));

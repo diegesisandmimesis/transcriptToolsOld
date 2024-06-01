@@ -284,20 +284,23 @@ class TranscriptReportManager: TranscriptTool
 	}
 
 	_handleSummary(summarizer, data, t) {
-		local d, idx, r;
+		local d, r;
 
 		d = new ReportSummaryData(data.reports);
 		r = createSummaryReport(d, summarizer.summarize(d));
 		r.iter_ = data.reports[1].iter_;
-		//replaceReports(data.reports, r);
+		replaceReports(data.reports, r);
+/*
 		_removeReports(data.reports, t);
 		idx = _findPlaceFor(data.reports, t);
 		if(idx == nil)
 			t.reports_.append(r);
 		else
 			t.reports_.insertAt(idx, r);
+*/
 	}
 
+/*
 	_getGroup(report) {
 		local grp;
 
@@ -310,11 +313,12 @@ class TranscriptReportManager: TranscriptTool
 
 		return(grp);
 	}
+*/
 
 	_findPlaceFor(vec, t) {
 		local g;
 
-		if((g = _getGroup(vec[1])) == nil)
+		if((g = getReportGroup(vec[1])) == nil)
 			return(nil);
 		return(g.indexOfFirstFullReport());
 	}
