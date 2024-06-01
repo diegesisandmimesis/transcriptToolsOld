@@ -284,12 +284,39 @@ class TranscriptReportManager: TranscriptTool
 	}
 
 	_handleSummary(summarizer, data, t) {
-		local d, r;
+		local d, idx, r;
 
 		d = new ReportSummaryData(data.reports);
 		r = createSummaryReport(d, summarizer.summarize(d));
 		r.iter_ = data.reports[1].iter_;
-		replaceReports(data.reports, r);
+		//replaceReports(data.reports, r);
+		_removeReports(data.reports, t);
+		idx = _findPlaceFor(data.reports, t);
+		if(idx == nil)
+			t.reports_.append(r);
+		else
+			t.reports_.insertAt(idx, r);
+	}
+
+	_getGroup(report) {
+		local grp;
+
+		grp = nil;
+		forEachReportGroup(function(o) {
+			if(grp != nil) return;
+			if(o.isReportIn(report))
+				grp = o;
+		});
+
+		return(grp);
+	}
+
+	_findPlaceFor(vec, t) {
+		local g;
+
+		if((g = _getGroup(vec[1])) == nil)
+			return(nil);
+		return(g.indexOfFirstFullReport());
 	}
 
 	_handleImplicit(summarizer, data, t) {
@@ -304,9 +331,15 @@ class TranscriptReportManager: TranscriptTool
 		r.messageText_
 			= '<.p0>\n<.assume><<toString(txt)>><./assume>\n';
 		r.messageProp_ = nil;
-		data.reports.forEach({ x: t.reports_.removeElement(x) });
+
+		_removeReports(data.reports, t);
+
 		t.reports_.insertAt(idx, r);
 		//replaceReports(data.reports, r);
+	}
+
+	_removeReports(vec, t?) {
+		vec.forEach({ x: t.reports_.removeElement(x) });
 	}
 
 	// Create the summary report object.

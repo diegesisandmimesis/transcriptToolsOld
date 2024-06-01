@@ -328,12 +328,14 @@ class TranscriptTools: TranscriptToolsWidget
 
 			if((idx = t.reports_.indexOf(o)) == nil)
 				return;
+
 			r = t.reports_[idx];
 			if(r.ofKind(ImplicitActionAnnouncement)
 				|| r.ofKind(MultiObjectAnnouncement)
 				|| r.ofKind(DefaultCommandReport)
 				|| r.ofKind(ConvBoundaryReport))
 				return;
+
 			if((min == nil) || (idx < min))
 				min = idx;
 		});

@@ -88,6 +88,29 @@ class ReportGroup: TranscriptToolsObject
 		return(t.indexOf(vec[1]));
 	}
 
+	indexOfFirstFullReport() {
+		local idx, lastIdx, o, t;
+
+		if((t = getTranscript()) == nil)
+			return(nil);
+
+		if((idx = indexOfFirstReport()) == nil)
+			return(nil);
+		if((lastIdx = indexOfLastReport()) == nil)
+			return(nil);
+
+		while(idx <= lastIdx) {
+			o = t.reports[idx];
+			if(!o.ofKind(ImplicitActionAnnouncement)
+				&& !o.ofKind(MultiObjectAnnouncement)
+				&& !o.ofKind(DefaultCommandReport)
+				&& !o.ofKind(ConvBoundaryReport))
+				return(idx);
+		}
+
+		return(lastIdx);
+	}
+
 	indexOfLastReport() {
 		local t;
 
@@ -97,6 +120,12 @@ class ReportGroup: TranscriptToolsObject
 			return(nil);
 
 		return(t.reports_.indexOf(vec[vec.length]));
+	}
+
+	isReportIn(report) {
+		if(vec == nil)
+			return(nil);
+		return(vec.indexOf(report));
 	}
 
 	getReportSummarizer() {
