@@ -8,29 +8,54 @@
 
 #include "transcriptTools.h"
 
+// Data structure for holding the reports for a specific summarizer.
+// Normal flow is to go through the transcript and see which reports
+// want to be handled by which summarizers.  The result of that
+// process is a vector of instances of SummarizerData.
 class SummarizerData: object
 	summarizer = nil
 	reports = perInstance(new Vector())
-
 	construct(s) { summarizer = s; }
 ;
 
+// Data structure for holding the reports for a specific distinguisher
+// announcement
+// In the normal flow of processing the reports for each summarizer (as
+// organized into SummarizerData instances, above) are iterated through,
+// determining what object distinguisher announcement, if any, is needed
+// for disambiguation in the report.  In this case the distinguisher
+// is the noun phrase before the colon in the output.
+// We also use DistinguisherData to aggregate implicit reports, in that
+// case using their action as "distinguisher".
 class DistinguisherData: object
 	distinguisher = nil
 	reports = perInstance(new Vector())
-
 	construct(d) { distinguisher = d; }
 ;
 
 class TranscriptReportManager: TranscriptTool
 	toolPriority = 500
 
+	// List of report manager classes.  At preinit if we don't
+	// already have an instance of any of these, we'll add one
 	defaultReportManagers = static [ GeneralReportManager ]
+
+	// List of all of our "personal" report managers.  This is NOT
+	// all the report managers we might use.  This is just the
+	// list of ones that we made for our own use.
 	_reportManagers = nil
 
+	// Last game turn we ran on
 	_timestamp = nil
+
+	// Boolean flag indicating whether or not to prepend object
+	// announcements to reports
 	_distinguisherFlag = nil
 
+	// Returns the report manager, if any, in our personal list
+	// that matches the given class.
+	// This doesn't check ALL report managers, just ones we created
+	// for ourselves.
 	getReportManager(cls) {
 		local i;
 
@@ -45,22 +70,30 @@ class TranscriptReportManager: TranscriptTool
 		return(nil);
 	}
 
+	// Preinit method.
 	initializeTranscriptTool() {
 		inherited();
 		addDefaultReportManagers();
 	}
 
+	// Add a report manager to our list.
+	// IMPORTANT:  We DO NOT do this for every report manager we
+	// 	use.  This is ONLY for ones we've created for our own
+	//	use.
 	addReportManager(obj) {
 		if(_reportManagers == nil)
 			_reportManagers = new Vector();
 		_reportManagers.append(obj);
 	}
 
+	// Make sure we have instances of all the report manager types
+	// in our default list
 	addDefaultReportManagers() {
 		local obj;
 
 		if(defaultReportManagers == nil)
 			return;
+
 		if(!defaultReportManagers.ofKind(Collection))
 			defaultReportManagers = [ defaultReportManagers ];
 
@@ -74,18 +107,26 @@ class TranscriptReportManager: TranscriptTool
 		});
 	}
 
+	// Getter and setter for the distinguisher flag
 	getDistinguisherFlag() { return(_distinguisherFlag == true); }
 	setDistinguisherFlag() { _distinguisherFlag = true; }
 
+	// Main lifecycle method, called by our TranscriptTool parent
+	// during afterActionMain()
 	run() {
 		local t, vec;
 
+		// Use the turn number to make sure we're not running
+		// multiple times in a single turn.
 		if(_timestamp == gTurn)
 			return;
 		_timestamp = gTurn;
 
+		// Reset the distinguisher flag.
 		_distinguisherFlag = nil;
 
+		// If we can't get the granscript for some reason, die
+		// out of shame
 		if((t = getTranscript()) == nil)
 			return;
 
@@ -102,17 +143,27 @@ class TranscriptReportManager: TranscriptTool
 		if(vec.length > 1)
 			setDistinguisherFlag();
 
+		// See if we've got as many summaries as we have objects.
+		// This is for the specific case where all of our reports
+		// end up in a single summary.  We don't have to explicitly
+		// check for that, because if we're summarizing all reports
+		// but splitting them into multiple summaries we'll pick
+		// that up elsewhere.
 		if(getTotalDobjCount() != getSummarizedDobjCount(vec))
 			setDistinguisherFlag();
 
+		// Actually summarize the reports.
 		vec.forEach({ x: handleSummary(x, t) });
 	}
 
+	// Total number of direct objects mentioned in the current
+	// action
 	getTotalDobjCount() {
 		return((gAction && gAction.dobjList_)
 			? gAction.dobjList_.length : 0);
 	}
 
+	// Get the number of reports we're summarizing.
 	getSummarizedDobjCount(vec) {
 		local n;
 
@@ -179,29 +230,18 @@ class TranscriptReportManager: TranscriptTool
 	// First arg is a SummarizerData instance, second is the transcript
 	// we're working on
 	handleSummary(data, t) {
-		local dist, o, vec;
+		local imp, vec;
 
 		vec = new Vector();
+		imp = new Vector();
 
 		// Go through all the reports for this summarizer
 		data.reports.forEach(function(report) {
-			// Get the distinguisher for this report
-			dist = getReportDistinguisher(report.dobj_, 1);
+			if(report.isActionImplicit())
+				_handleSummaryImplicit(report, imp);
+			else
+				_handleSummaryNonImplicit(report, vec);
 
-//aioSay('\n\tdistinguisher = <<toString(dist)>> for <<report.dobj_.name>> @ <<report.dobj_.location.name>>\n ');
-			// If we haven't seen this distinguisher before,
-			// create a new distinguisher data object for
-			// it
-			if((o = vec.valWhich({
-				x: x.distinguisher == dist
-			})) == nil) {
-				vec.append(new DistinguisherData(dist));
-				o = vec[vec.length];
-			}
-
-			// Add this report to the reports for this
-			// distinguisher
-			o.reports.append(report);
 		});
 
 		// If we have more than one distinguisher's worth of
@@ -209,7 +249,38 @@ class TranscriptReportManager: TranscriptTool
 		if(vec.length > 1)
 			setDistinguisherFlag();
 
+		imp.forEach({ x: _handleImplicit(data.summarizer, x, t) });
 		vec.forEach({ x: _handleSummary(data.summarizer, x, t) });
+	}
+
+	_handleSummaryImplicit(report, vec) {
+		local o;
+
+		if((o = vec.valWhich({ x: x.distinguisher == vec.action_ }))
+			== nil) {
+			vec.append(new DistinguisherData(vec.action_));
+			o = vec[vec.length];
+		}
+		o.reports.append(report);
+	}
+
+	_handleSummaryNonImplicit(report, vec) {
+		local dist, o;
+
+		// Get the distinguisher for this report
+		dist = getReportDistinguisher(report.dobj_, 1);
+
+		// If we haven't seen this distinguisher before,
+		// create a new distinguisher data object for
+		// it
+		if((o = vec.valWhich({ x: x.distinguisher == dist })) == nil) {
+			vec.append(new DistinguisherData(dist));
+			o = vec[vec.length];
+		}
+
+		// Add this report to the reports for this
+		// distinguisher
+		o.reports.append(report);
 	}
 
 	_handleSummary(summarizer, data, t) {
@@ -217,9 +288,32 @@ class TranscriptReportManager: TranscriptTool
 
 		d = new ReportSummaryData(data.reports);
 		r = createSummaryReport(d, summarizer.summarize(d));
+		r.iter_ = data.reports[1].iter_;
 		replaceReports(data.reports, r);
 	}
 
+	_handleImplicit(summarizer, data, t) {
+		local d, idx, r, txt;
+
+		d = new ReportSummaryData(data.reports);
+		txt = summarizer.summarize(d);
+		r = data.reports.valWhich({
+			x: x.ofKind(ImplicitActionAnnouncement)
+		});
+		idx = t.reports_.indexOf(data.reports[1]);
+		r.messageText_
+			= '<.p0>\n<.assume><<toString(txt)>><./assume>\n';
+		r.messageProp_ = nil;
+		data.reports.forEach({ x: t.reports_.removeElement(x) });
+		t.reports_.insertAt(idx, r);
+		//replaceReports(data.reports, r);
+	}
+
+	// Create the summary report object.
+	// First arg is the summary data.
+	// Second arg is the summary text.
+	// Optional third arg is the distinguisher announcement.  If
+	// not given it will be computed if needed.
 	createSummaryReport(data, msg, dist?) {
 		local txt;
 
@@ -238,6 +332,7 @@ class TranscriptReportManager: TranscriptTool
 		return(new CommandReportSummary(toString(txt)));
 	}
 
+	// Figure out what distinguisher announcement to use.
 	getReportDistinguisher(obj, n) {
 		if(obj == nil)
 			return(nil);
@@ -246,8 +341,6 @@ class TranscriptReportManager: TranscriptTool
 			&& obj.reportManager.reportManagerAnnounceText)
 			return(obj.reportManager.reportManagerAnnounceText);
 
-//local d = obj.getBestDistinguisher(gAction.getResolvedObjList(DirectObject));
-//aioSay('\n<<obj.name>> using <<toString(d)>>\n ');
 		return(obj.getBestDistinguisher(gAction
 			.getResolvedObjList(DirectObject))
 			.reportName(obj, n));

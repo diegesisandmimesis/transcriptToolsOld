@@ -21,6 +21,8 @@ modify CommandReport
 		_debug('\t\titer_ = <<toString(iter_)>>', tag);
 		_debug('\t\taction = <<toString(action_)>>', tag);
 		_debug('\t\tisFailure = <<toString(isFailure)>>', tag);
+		_debug('\t\tisActionImplicit = <<toString(isActionImplicit)>>',
+			tag);
 		if(dobj_)
 			_debug('\t\tdobj_ = <<dobj_.name>> @
 				<<toString(dobj_.location ? dobj_.location.name
@@ -44,8 +46,13 @@ modify TranscriptTools
 	}
 	runTranscriptTools() {
 		_debug('===TRANSCRIPT TOOLS START===', 'transcript');
+		_debug('=====TRANSCRIPT BEFORE START=====', 'transcript');
 		_debugTranscript('transcript');
+		_debug('=====TRANSCRIPT BEFORE END=====', 'transcript');
 		inherited();
+		_debug('=====TRANSCRIPT AFTER START=====', 'transcript');
+		_debugTranscript('transcript');
+		_debug('=====TRANSCRIPT AFTER END=====', 'transcript');
 		_debug('===TRANSCRIPT TOOLS END===', 'transcript');
 	}
 ;

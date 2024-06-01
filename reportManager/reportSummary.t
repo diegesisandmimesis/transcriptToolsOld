@@ -61,6 +61,7 @@ class ReportSummary: TranscriptToolsObject
 	initializeReportSummary() {
 		if(location == nil)
 			return(nil);
+
 		if(location.ofKind(ReportManager)) {
 			location.addReportManagerSummary(self);
 			return(true);
@@ -79,15 +80,23 @@ class ReportSummary: TranscriptToolsObject
 		return(act.ofKind(action));
 	}
 
+	// Decided whether or no we want to summarize this report
 	acceptReport(report) {
 		if(!getActive())
 			return(nil);
+
 		if(report == nil)
 			return(nil);
+
 		if(!matchAction(report.action_))
 			return(nil);
+
 		if(report.isFailure != isFailure)
 			return(nil);
+
+		if(report.isActionImplicit() != isImplicit)
+			return(nil);
+
 		return(true);
 	}
 
@@ -99,24 +108,19 @@ class ReportSummary: TranscriptToolsObject
 	summarize(data) {}
 
 	reportSummaryMessageParams(obj?) {}
-
-/*
-	summarizeReports(vec) {
-		local txt;
-
-		if(reportManager != nil)
-			txt = reportManager.summarizeReports(vec);
-		else
-			txt = '';
-
-		return(commandReportSummaryClass.createInstance(txt));
-	}
-	summarizeReports(vec) {
-		return(_summarize(new ReportSummaryData(vec)));
-	}
-*/
 ;
 
 class FailureSummary: ReportSummary
 	isFailure = true
+;
+
+class ImplicitSummary: ReportSummary
+	isImplicit = true
+
+	acceptReport(report) {
+		if(inherited(report) != true)
+			return(nil);
+
+		return(report.isActionImplicit() == true);
+	}
 ;

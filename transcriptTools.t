@@ -80,6 +80,8 @@ class TranscriptTools: TranscriptToolsWidget
 	// by CommandReport.iter_
 	reportGroups = perInstance(new Vector)
 
+	_timestamp = nil
+
 	// The transcript we're managing
 	_transcript = nil
 
@@ -162,11 +164,16 @@ class TranscriptTools: TranscriptToolsWidget
 		if(getActive() != true)
 			return(nil);
 
+		if(_timestamp == gTurn)
+			return(nil);
+
 		return(true);
 	}
 
 	// Main report manager loop.
 	runTranscriptTools() {
+		_timestamp = gTurn;
+
 		clear();		// clear everything, probably redundant
 		preprocess();		// run preprocessors
 		run();			// run "main" report processing
@@ -317,12 +324,25 @@ class TranscriptTools: TranscriptToolsWidget
 
 		min = nil;
 		oldReports.forEach(function(o) {
+			local r;
+
 			if((idx = t.reports_.indexOf(o)) == nil)
+				return;
+			r = t.reports_[idx];
+			if(r.ofKind(ImplicitActionAnnouncement)
+				|| r.ofKind(MultiObjectAnnouncement)
+				|| r.ofKind(DefaultCommandReport)
+				|| r.ofKind(ConvBoundaryReport))
 				return;
 			if((min == nil) || (idx < min))
 				min = idx;
 		});
+
+		if(min == nil)
+			min = t.reports_.indexOf(oldReports[oldReports.length]);
+
 		oldReports.forEach({ x: t.reports_.removeElement(x) });
+
 		if((min == nil) || (min > t.reports_.length + 1))
 			min = t.reports_.length + 1;
 			
