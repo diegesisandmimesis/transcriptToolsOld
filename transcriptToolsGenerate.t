@@ -2,13 +2,22 @@
 //
 // transcripToolsGenerate.t
 //
-//	Code for generating a header file.
+//	Code for generating the patch file, transcriptToolsPatch.t.  The
+//	patch file tweaks all the TAction classes to include a
+//	summarizeDobjProp, which is required to make the
+//
+//		dobjFor(SomeAction) {
+//			summarize(data) { }
+//		}
+//
+//	...logic work.
+//
 //
 //	Compile with -D TRANSCRIPT_TOOLS_GENERATE_PATCH to enable.
 //
 //	IMPORTANT: DO NOT COMPILE WITH THE -D TRANSCRIPT_TOOLS_GENERATE_PATCH
 //		FLAG unless you are building a utility specifically to
-//		generate a header file.  This is NOT code that wants to
+//		generate a patch file.  This is NOT code that wants to
 //		be included in a released game.
 //
 #include <adv3.h>
@@ -31,7 +40,7 @@ modify transcriptTools
 		_generateTables();
 		_generatePatch(buf);
 		if(_stringToFile(buf, fname) == true)
-			"\nWrote header to file <q><<toString(fname)>></q>.\n ";
+			"\nWrote patch to file <q><<toString(fname)>></q>.\n ";
 		else
 			"\nFailed to write to file
 				<q><<toString(fname)>></q>.\n ";
@@ -64,17 +73,26 @@ modify transcriptTools
 		});
 	}
 
-	// Generate the header itself.
+	// Generate the patch itself.
 	_generatePatch(buf) {
 		local obj;
 
-		// Comments
+		// First, the header bits and some comments.
 		buf.append('#charset "us-ascii"\n');
 		buf.append('//\n');
 		buf.append('// transcriptToolsPatch.t\n');
 		buf.append('//\n');
-		buf.append('//\ttranscriptTools monkey patch to all TAction\n');
-		buf.append('//\tinstances declared in adv3\n');
+		buf.append('//\tModifies all the stock adv3 TAction classes ');
+		buf.append('to have a\n');
+		buf.append('//\tsummarizeDobjProp property, required for ');
+		buf.append('self-summaries.\n');
+		buf.append('//\n');
+		buf.append('//\tTHIS FILE IS GENERATED AUTOMAGICALLY\n');
+		buf.append('//\n');
+		buf.append('//\tChanges shouldn\'t be made here, but instead ');
+		buf.append('to\n');
+		buf.append('//\ttranscriptToolsGenerate.t.  See the comments ');
+		buf.append('there for more details.\n');
 		buf.append('//\n');
 		buf.append('#include <adv3.h>\n');
 		buf.append('#include <en_us.h>\n');
@@ -125,7 +143,6 @@ modify transcriptTools
 		buf.append(toString(n));
 		buf.append(' summarizeDobjProp = ');
 		buf.append('&summarizeDobj');
-
 		buf.append(n0);
 		buf.append(';\n');
 	}

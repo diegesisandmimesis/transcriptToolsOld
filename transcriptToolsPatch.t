@@ -2,8 +2,13 @@
 //
 // transcriptToolsPatch.t
 //
-//	transcriptTools monkey patch to all TAction
-//	instances declared in adv3
+//	Modifies all the stock adv3 TAction classes to have a
+//	summarizeDobjProp property, required for self-summaries.
+//
+//	THIS FILE IS GENERATED AUTOMAGICALLY
+//
+//	Changes shouldn't be made here, but instead to
+//	transcriptToolsGenerate.t.  See the comments there for more details.
 //
 #include <adv3.h>
 #include <en_us.h>

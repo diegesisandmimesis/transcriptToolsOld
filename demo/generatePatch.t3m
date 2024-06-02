@@ -1,5 +1,6 @@
 -D LANGUAGE=en_us
 -D MESSAGESTYLE=neu
+-D TRANSCRIPT_TOOLS_GENERATE_PATCH
 -Fy obj -Fo obj
 -Fs ../..
 -o games/generatePatch.t3
