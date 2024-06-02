@@ -100,6 +100,7 @@ class TranscriptTools: TranscriptToolsWidget
 		sortTranscriptTools();
 	}
 
+	// Returns the first tool, if any, matching the given class
 	getTranscriptTool(cls) {
 		local i;
 
@@ -142,6 +143,7 @@ class TranscriptTools: TranscriptToolsWidget
 		return(true);
 	}
 
+	// Remove the given tool from our list
 	removeTranscriptTool(obj) { _transcriptTools.removeElement(obj); }
 
 	// Order the list of tools by their numeric toolPriority
@@ -357,34 +359,31 @@ class TranscriptTools: TranscriptToolsWidget
 		if(!newReports.ofKind(Collection))
 			newReports = [ newReports ];
 
-/*
 		// Figure out where to insert the new reports.
-		if((grp = getReportGroup(oldReports[1])) == nil) {
-			// If the first old report wasn't in a group,
-			// we just grab its index in the transcript.
-			idx = t.reports_.indexOf(oldReports[oldReports.length]);
-		} else {
-			// If the first old report IS in a group, we use
-			// the group logic to figure out the best place for
-			// the replacement.
-			idx = grp.indexOfFirstFullReport();
-		}
-*/
 		idx = getFirstIndexOfReports(oldReports, t);
 
+		// Check the insertion point
 		if((idx == nil) || (idx > t.reports_.length + 1))
 			idx = t.reports_.length + 1;
 			
+		// Add the new reports
 		newReports.forEach(function(o) {
 			t.reports_.insertAt(idx, o);
 			idx += 1;
 		});
 
+		// Remove the old reports.
+		// Done AFTER adding the new reports because removing them
+		// might change the transcript enough that the index we
+		// computed above would have to be re-computed
 		oldReports.forEach({ x: removeReport(x, t) });
 
 		return(true);
 	}
 
+	// Given a list of reports, return the index in the transcript
+	// of the earliest one, which some fiddly logic for using report
+	// groups, if they're defined for these reports
 	getFirstIndexOfReports(lst, t?) {
 		local grp, grp0, idx;
 
@@ -394,6 +393,7 @@ class TranscriptTools: TranscriptToolsWidget
 		idx = nil;
 		grp0 = nil;
 
+		// Figure out the earliest group for these reports.
 		lst.forEach(function(o) {
 			if((grp = getReportGroup(o)) == nil)
 				return;
@@ -401,9 +401,17 @@ class TranscriptTools: TranscriptToolsWidget
 				grp0 = grp;
 		});
 
+		// If we got a group, ask it the location of the first
+		// full report.  We use this as the index because sometimes
+		// our group will contain bookkeeping reports that AREN'T
+		// part of the report vector we're fiddling with, and we
+		// and so we don't necessarily want the first report of
+		// the group our reports are from
 		if(grp0 != nil)
 			idx = grp0.indexOfFirstFullReport();
 
+		// Fallback if we're not using groups.  Probably never
+		// needed.
 		if(idx == nil) {
 			idx = t.reports_.length;
 			lst.forEach(function(o) {
@@ -417,19 +425,7 @@ class TranscriptTools: TranscriptToolsWidget
 		return(idx);
 	}
 
-	getReportGroup(report) {
-/*
-		local i;
-
-		for(i = 1; i <= reportGroups.length; i++) {
-			if(reportGroups[i].getReportIndex(report) != nil)
-				return(reportGroups[i]);
-		}
-
-		return(nil);
-*/
-		return(report.reportGroup);
-	}
+	getReportGroup(report) { return(report.reportGroup); }
 ;
 
 transcriptTools: TranscriptTools
