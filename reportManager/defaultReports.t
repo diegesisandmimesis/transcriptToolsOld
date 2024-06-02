@@ -83,3 +83,26 @@ class ImplicitTakeSummary: ImplicitSummary
 
 	summarize(data) { return('first taking <<data.listNames()>>'); }
 ;
+
+
+class SelfSummary: ReportSummary
+	acceptReport(report) {
+		if(!getActive() || (report == nil))
+			return(nil);
+		if(report.isFailure != isFailure)
+			return(nil);
+		if(report.isActionImplicit() != isImplicit)
+			return(nil);
+		if(report.action_.propType(&summarizeDobjProp) == TypeNil)
+			return(nil);
+		if(report.dobj_ == nil)
+			return(nil);
+		if(report.dobj_.propType(report.action_.summarizeDobjProp)
+			== TypeNil)
+			return(nil);
+		return(true);
+	}
+	summarize(data) {
+		return(data.dobj.(data.vec[1].action_.summarizeDobjProp)(data));
+	}
+;

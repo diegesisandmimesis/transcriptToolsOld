@@ -2,10 +2,10 @@
 -D MESSAGESTYLE=neu
 -Fy obj -Fo obj
 -Fs ../..
--o games/implicitTest.t3
+-o games/dobjForTest.t3
 -lib system
 -lib adv3/adv3
 -lib syslog/syslog
--lib ../reportManager
--source src/implicitTest.t
+-lib ../transcriptTools
+-source src/dobjForTest.t
 -source reflect.t

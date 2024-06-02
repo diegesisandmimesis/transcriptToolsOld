@@ -2,10 +2,9 @@
 -D MESSAGESTYLE=neu
 -Fy obj -Fo obj
 -Fs ../..
--o games/implicitTest.t3
+-o games/generateHeader.t3
 -lib system
 -lib adv3/adv3
 -lib syslog/syslog
--lib ../reportManager
--source src/implicitTest.t
--source reflect.t
+-lib ../transcriptTools
+-source src/generateHeader.t

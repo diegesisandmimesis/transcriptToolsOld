@@ -1,6 +1,6 @@
 #charset "us-ascii"
 //
-// flowerTest.t
+// dobjForTest.t
 // Version 1.0
 // Copyright 2022 Diegesis & Mimesis
 //
@@ -8,7 +8,7 @@
 //
 // It can be compiled via the included makefile with
 //
-//	# t3make -f flowerTest.t3m
+//	# t3make -f dobjForTest.t3m
 //
 // ...or the equivalent, depending on what TADS development environment
 // you're using.
@@ -23,21 +23,6 @@
 
 versionInfo: GameID;
 gameMain: GameMainDef initialPlayerChar = me;
-
-// Our report manager.  All it does is summarize the >EXAMINE command on
-// the flowers.
-flowerReportManager: ReportManager
-	reportManagerFor = Flower
-;
-+ReportSummary @ExamineAction
-	// Summarize the examines.
-	summarize(data) {
-		return('It\'s <<objectLister.makeSimpleList(data.objs)>>. ');
-	}
-;
-+ReportSummary @SmellAction
-	summarize(data) { return('They all smell the same. '); }
-;
 
 // A class for the objects we're going to summarize.
 // The only interesting thing about the class is that the objects are
@@ -68,6 +53,19 @@ class Flower: Thing 'flower*flowers' 'flower'
 		cmdDict.addWord(self, color, &adjective);
 		name = '<<color>> flower';
 	}
+
+	dobjFor(Take) {
+		verify() {
+			illogical('{You/He} can\'t pick the flowers. ');
+		}
+	}
+
+	dobjFor(Examine) {
+		// Summarize the examines.
+		summarize(data) { return('It\'s <<data.listNames()>>. '); }
+	}
+;
+
 ;
 
 class RedFlower: Flower color = 'red';
@@ -76,24 +74,14 @@ class GreenFlower: Flower color = 'green';
 
 class Pebble: Thing '(small) (round) pebble*pebbles' 'pebble'
 	"A small, round pebble. "
-	isEquivalent = true;
+	isEquivalent = true
+;
 
 startRoom: Room 'Void' "This is a featureless void.";
 +me: Person;
-// A bunch of flower instances with some other stuff in the middle.
-++GreenFlower;
-++Pebble;
-++RedFlower;
-+GreenFlower;
 +RedFlower;
-+Pebble;
-+GreenFlower;
-+box: Container '(wooden) box' 'box' "A wooden box. ";
-++RedFlower;
-++Pebble;
-++BlueFlower;
-++RedFlower;
-//+BlueFlower;
++BlueFlower;
 +GreenFlower;
 
+modify transcriptTools active = true;
 modify syslog initFlags = 'transcript';

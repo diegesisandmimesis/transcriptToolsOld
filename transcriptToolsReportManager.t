@@ -38,7 +38,10 @@ class TranscriptReportManager: TranscriptTool
 
 	// List of report manager classes.  At preinit if we don't
 	// already have an instance of any of these, we'll add one
-	defaultReportManagers = static [ GeneralReportManager ]
+	defaultReportManagers = static [
+		GeneralReportManager,
+		SelfReportManager
+	]
 
 	// List of all of our "personal" report managers.  This is NOT
 	// all the report managers we might use.  This is just the
@@ -290,37 +293,6 @@ class TranscriptReportManager: TranscriptTool
 		r = createSummaryReport(d, summarizer.summarize(d));
 		r.iter_ = data.reports[1].iter_;
 		replaceReports(data.reports, r);
-/*
-		_removeReports(data.reports, t);
-		idx = _findPlaceFor(data.reports, t);
-		if(idx == nil)
-			t.reports_.append(r);
-		else
-			t.reports_.insertAt(idx, r);
-*/
-	}
-
-/*
-	_getGroup(report) {
-		local grp;
-
-		grp = nil;
-		forEachReportGroup(function(o) {
-			if(grp != nil) return;
-			if(o.isReportIn(report))
-				grp = o;
-		});
-
-		return(grp);
-	}
-*/
-
-	_findPlaceFor(vec, t) {
-		local g;
-
-		if((g = getReportGroup(vec[1])) == nil)
-			return(nil);
-		return(g.indexOfFirstFullReport());
 	}
 
 	_handleImplicit(summarizer, data, t) {

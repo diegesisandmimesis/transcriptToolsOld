@@ -310,6 +310,20 @@ class TranscriptTools: TranscriptToolsWidget
 		return(moveTo);
 	}
 
+	removeReport(report, t?) {
+		local idx;
+
+		if((t == nil) && ((t = getTranscript()) == nil))
+			return(nil);
+
+		if((idx = t.reports_.indexOf(report)) == nil)
+			return(nil);
+
+		t.reports_.removeElementAt(idx);
+
+		return(true);
+	}
+
 	replaceReports(oldReports, newReports, t?) {
 		local grp, idx;
 
@@ -349,7 +363,8 @@ class TranscriptTools: TranscriptToolsWidget
 		}
 
 
-		oldReports.forEach({ x: t.reports_.removeElement(x) });
+		//oldReports.forEach({ x: t.reports_.removeElement(x) });
+		oldReports.forEach({ x: removeReport(x, t) });
 
 		if((idx == nil) || (idx > t.reports_.length + 1))
 			idx = t.reports_.length + 1;

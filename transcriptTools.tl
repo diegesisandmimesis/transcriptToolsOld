@@ -1,4 +1,5 @@
 name: transcriptTools Library
+source: transcriptToolsPatch.t
 source: transcriptTools.t
 source: transcriptToolsMods.t
 source: transcriptToolsGroup.t
@@ -12,4 +13,5 @@ source: reportManager/distinguisher.t
 source: reportManager/defaultReports.t
 source: transcriptToolsLister.t
 source: transcriptToolsPreinit.t
+source: transcriptToolsHeader.t
 source: transcriptToolsDebug.t

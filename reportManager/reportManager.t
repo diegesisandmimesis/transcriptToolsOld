@@ -241,6 +241,8 @@ class GeneralReportManager: ReportManager
 ;
 
 class SelfReportManager: ReportManager
+	reportManagerDefaultSummaries = static [ SelfSummary ]
+
 	matchReportDobj(obj) {
 		if((obj == nil) || (gAction == nil))
 			return(nil);
