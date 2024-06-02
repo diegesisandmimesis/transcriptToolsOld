@@ -81,8 +81,8 @@ class Pebble: Thing '(small) (round) pebble*pebbles' 'pebble'
 startRoom: Room 'Void' "This is a featureless void.";
 +me: Person;
 // A bunch of flower instances with some other stuff in the middle.
-+box: Container '(wooden) box' 'box' "A wooden box. ";
 +RedFlower;
++box: Container '(wooden) box' 'box' "A wooden box. ";
 ++RedFlower;
 ++BlueFlower;
 ++RedFlower;
@@ -90,46 +90,3 @@ startRoom: Room 'Void' "This is a featureless void.";
 
 modify syslog initFlags = 'transcript';
 
-
-
-/*
-modify Thing
-	getBestDistinguisher(lst) {
-		local bestDist, bestCnt;
-
-		lst -= self;
-
-        if(lst.subset({obj: !nullDistinguisher.canDistinguish(self, obj)}).length() == 0) {
-aioSay('\nnull distinguisher\n ');
-            return nullDistinguisher;
-	}
-
-        lst = lst.subset(
-            {obj: !basicDistinguisher.canDistinguish(self, obj)});
-
-        if (lst.length() == 0) {
-            return basicDistinguisher;
-}
-
-        bestDist = basicDistinguisher;
-        bestCnt = lst.countWhich({obj: bestDist.canDistinguish(self, obj)});
-
-        foreach (local dist in distinguishers) {
-            if (dist == bestDist)
-                continue;
-
-            local cnt = lst.countWhich({obj: dist.canDistinguish(self, obj)});
-
-            if (cnt == lst.length())
-                return dist;
-
-            if (cnt > bestCnt) {
-                bestDist = dist;
-                bestCnt = cnt;
-            }
-        }
-
-        return bestDist;
-	}
-;
-*/
