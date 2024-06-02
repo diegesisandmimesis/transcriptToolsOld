@@ -427,12 +427,3 @@ class TranscriptTools: TranscriptToolsWidget
 
 	getReportGroup(report) { return(report.reportGroup); }
 ;
-
-transcriptTools: TranscriptTools
-	defaultTools = static [
-		ReportGrouper,
-		MarkFailures,
-		MoveFailuresToEndOfTranscript,
-		TranscriptReportManager
-	]
-;

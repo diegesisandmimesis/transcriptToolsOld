@@ -38,10 +38,13 @@ class TranscriptReportManager: TranscriptTool
 
 	// List of report manager classes.  At preinit if we don't
 	// already have an instance of any of these, we'll add one
+	defaultReportManagers = nil
+/*
 	defaultReportManagers = static [
 		GeneralReportManager,
 		SelfReportManager
 	]
+*/
 
 	// List of all of our "personal" report managers.  This is NOT
 	// all the report managers we might use.  This is just the

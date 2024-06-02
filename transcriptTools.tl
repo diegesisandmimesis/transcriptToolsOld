@@ -13,5 +13,6 @@ source: reportManager/distinguisher.t
 source: reportManager/defaultReports.t
 source: transcriptToolsLister.t
 source: transcriptToolsPreinit.t
+source: transcriptToolsDefaults.t
 source: transcriptToolsGenerate.t
 source: transcriptToolsDebug.t

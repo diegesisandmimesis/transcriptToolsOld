@@ -222,25 +222,18 @@ class ReportManager: TranscriptToolsWidget
 	forEachSummary(fn) {  _reportManagerSummaries.forEach({ x: fn(x) }); }
 ;
 
+// General non-object-specific report manager.
 class GeneralReportManager: ReportManager
-	reportManagerDefaultSummaries = static [
-		TakeSummary,
-		TakeFromSummary,
-		DropSummary,
-		PutOnSummary,
-		PutInSummary,
-		PutUnderSummary,
-		PutBehindSummary,
-
-		TakeFailedSummary,
-
-		ImplicitTakeSummary
-	]
+	reportManagerDefaultSummaries = nil
 
 	matchReportDobj(obj) { return(obj != nil); }
 ;
 
+// Report manager that handles dobjFor(Action) { summarize(data) {} }
+// logic.
 class SelfReportManager: ReportManager
+	// SelfSummary is a bespoke summarizer designed for use with
+	// this report manager.
 	reportManagerDefaultSummaries = static [ SelfSummary ]
 
 	matchReportDobj(obj) {
