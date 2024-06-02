@@ -70,7 +70,14 @@ class ReportGroup: TranscriptToolsObject
 		if(v.isActionImplicit())
 			hasImplicit = true;
 
+		v.reportGroup = self;
+
 		return(true);
+	}
+
+	removeReport(v) {
+		vec.removeElement(v);
+		v.reportGroup = nil;
 	}
 
 	getReports() { return(vec); }
@@ -78,14 +85,20 @@ class ReportGroup: TranscriptToolsObject
 	forEachReport(fn) { vec.forEach({ x: (fn)(x) }); }
 
 	indexOfFirstReport() {
-		local t;
+		local i, idx, t;
 
 		if((vec == nil) || !vec.length)
 			return(nil);
+
 		if((t = getTranscript()) == nil)
 			return(nil);
 
-		return(t.indexOf(vec[1]));
+		for(i = 1; i <= vec.length; i++) {
+			if((idx = t.reports_.indexOf(vec[i])) != nil)
+				return(idx);
+		}
+
+		return(nil);
 	}
 
 	indexOfFirstFullReport() {
@@ -100,26 +113,32 @@ class ReportGroup: TranscriptToolsObject
 			return(nil);
 
 		while(idx <= lastIdx) {
-			o = t.reports[idx];
-			if(!o.ofKind(ImplicitActionAnnouncement)
-				&& !o.ofKind(MultiObjectAnnouncement)
-				&& !o.ofKind(DefaultCommandReport)
-				&& !o.ofKind(ConvBoundaryReport))
+			o = t.reports_[idx];
+
+			if(!isReportSkippable(o))
 				return(idx);
+
+			idx += 1;
 		}
 
 		return(lastIdx);
 	}
 
+
 	indexOfLastReport() {
-		local t;
+		local i, idx, t;
 
 		if((vec == nil) || !vec.length)
 			return(nil);
 		if((t = getTranscript()) == nil)
 			return(nil);
 
-		return(t.reports_.indexOf(vec[vec.length]));
+		for(i = vec.length; i > 0; i--) {
+			if((idx = t.reports_.indexOf(vec[i])) != nil)
+				return(idx);
+		}
+
+		return(nil);
 	}
 
 	getReportIndex(report) {
@@ -143,3 +162,11 @@ class ReportGroup: TranscriptToolsObject
 		return(r);
 	}
 ;
+
+function
+isReportSkippable(report) {
+	return(report.ofKind(ImplicitActionAnnouncement)
+		|| report.ofKind(MultiObjectAnnouncement)
+		|| report.ofKind(DefaultCommandReport)
+		|| report.ofKind(ConvBoundaryReport));
+}

@@ -18,6 +18,8 @@ transcriptToolsModuleID: ModuleID {
 // Generic class for stuff in the module.
 class TranscriptToolsObject: Syslog syslogID = 'transcriptTools';
 
+// Class for high-level "manager"-type objects that can be toggled on
+// and off.
 class TranscriptToolsWidget: TranscriptToolsObject
 	active = true
 
@@ -182,6 +184,7 @@ class TranscriptTools: TranscriptToolsWidget
 		clear();		// clean up after ourselves.
 	}
 
+	// Main turn lifecycle methods
 	preprocess() { forEachTool({ x: x._preprocess() }); }
 	run() { forEachTool({ x: x._run() }); }
 	postprocess() { forEachTool({ x: x._postprocess() }); }
@@ -310,6 +313,9 @@ class TranscriptTools: TranscriptToolsWidget
 		return(moveTo);
 	}
 
+	// Remove the given report from the transcript.
+	// First arg is the report.
+	// Optional second arg is the transcript.
 	removeReport(report, t?) {
 		local idx;
 
@@ -321,50 +327,50 @@ class TranscriptTools: TranscriptToolsWidget
 
 		t.reports_.removeElementAt(idx);
 
+		// If the report was part of a report group, remove it from
+		// the group.
+		if(report.reportGroup != nil)
+			report.reportGroup.removeReport(report);
+
 		return(true);
 	}
 
+	// Replace one or more reports with different reports.
+	// First arg is a single report or a list of reports to
+	// remove.
+	// Second arg is the single report or list of reports to
+	// insert into the place where the old reports were.
+	// Optional third arg is the transcript.
 	replaceReports(oldReports, newReports, t?) {
-		local grp, idx;
+		local idx;
 
 		if((t == nil) && ((t = getTranscript()) == nil))
 			return(nil);
 
+		// Both sets of reports have to be defined.
 		if((oldReports == nil) || (newReports == nil))
 			return(nil);
+
+		// Make sure both sets of reports are lists.
 		if(!oldReports.ofKind(Collection))
 			oldReports = [ oldReports ];
 		if(!newReports.ofKind(Collection))
 			newReports = [ newReports ];
 
 /*
-		min = nil;
-		oldReports.forEach(function(o) {
-			local r;
-
-			if((idx = t.reports_.indexOf(o)) == nil)
-				return;
-
-			r = t.reports_[idx];
-			if(r.ofKind(ImplicitActionAnnouncement)
-				|| r.ofKind(MultiObjectAnnouncement)
-				|| r.ofKind(DefaultCommandReport)
-				|| r.ofKind(ConvBoundaryReport))
-				return;
-
-			if((min == nil) || (idx < min))
-				min = idx;
-		});
-*/
+		// Figure out where to insert the new reports.
 		if((grp = getReportGroup(oldReports[1])) == nil) {
+			// If the first old report wasn't in a group,
+			// we just grab its index in the transcript.
 			idx = t.reports_.indexOf(oldReports[oldReports.length]);
 		} else {
+			// If the first old report IS in a group, we use
+			// the group logic to figure out the best place for
+			// the replacement.
 			idx = grp.indexOfFirstFullReport();
 		}
-
-
-		//oldReports.forEach({ x: t.reports_.removeElement(x) });
-		oldReports.forEach({ x: removeReport(x, t) });
+*/
+		idx = getFirstIndexOfReports(oldReports, t);
 
 		if((idx == nil) || (idx > t.reports_.length + 1))
 			idx = t.reports_.length + 1;
@@ -374,10 +380,45 @@ class TranscriptTools: TranscriptToolsWidget
 			idx += 1;
 		});
 
+		oldReports.forEach({ x: removeReport(x, t) });
+
 		return(true);
 	}
 
+	getFirstIndexOfReports(lst, t?) {
+		local grp, grp0, idx;
+
+		if((t == nil) && ((t = getTranscript()) == nil))
+			return(nil);
+
+		idx = nil;
+		grp0 = nil;
+
+		lst.forEach(function(o) {
+			if((grp = getReportGroup(o)) == nil)
+				return;
+			if((grp0 == nil) || (grp.groupID < grp0.groupID))
+				grp0 = grp;
+		});
+
+		if(grp0 != nil)
+			idx = grp0.indexOfFirstFullReport();
+
+		if(idx == nil) {
+			idx = t.reports_.length;
+			lst.forEach(function(o) {
+				local i;
+				if(((i = t.reports_.indexOf(o)) != nil)
+					&& (i < idx))
+					idx = i;
+			});
+		}
+
+		return(idx);
+	}
+
 	getReportGroup(report) {
+/*
 		local i;
 
 		for(i = 1; i <= reportGroups.length; i++) {
@@ -386,6 +427,8 @@ class TranscriptTools: TranscriptToolsWidget
 		}
 
 		return(nil);
+*/
+		return(report.reportGroup);
 	}
 ;
 

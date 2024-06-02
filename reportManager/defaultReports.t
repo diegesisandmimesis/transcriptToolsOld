@@ -86,6 +86,7 @@ class ImplicitTakeSummary: ImplicitSummary
 
 
 class SelfSummary: ReportSummary
+	active = nil
 	acceptReport(report) {
 		if(!getActive() || (report == nil))
 			return(nil);

@@ -9,6 +9,18 @@
 
 #ifdef SYSLOG
 
+DefineSystemAction(TranscriptToolsToggle)
+	execSystemAction() {
+		transcriptTools.setActive(!transcriptTools.getActive());
+		defaultReport('Transcript tools now
+			<<(transcriptTools.getActive ? '' : 'in')>>active. ');
+	}
+;
+VerbRule(TranscriptToolsToggle)
+	'toggle' 'transcript' 'tools' : TranscriptToolsToggleAction
+	verbPhrase = 'toggle/toggling transcript tools'
+;
+
 modify CommandReport
 	syslogID = 'CommandReport'
 

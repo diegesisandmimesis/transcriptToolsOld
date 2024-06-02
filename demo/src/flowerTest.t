@@ -96,4 +96,4 @@ startRoom: Room 'Void' "This is a featureless void.";
 //+BlueFlower;
 +GreenFlower;
 
-modify syslog initFlags = 'transcript';
+//modify syslog initFlags = 'transcript';

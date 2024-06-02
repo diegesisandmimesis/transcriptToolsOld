@@ -311,7 +311,6 @@ class TranscriptReportManager: TranscriptTool
 		_removeReports(data.reports, t);
 
 		t.reports_.insertAt(idx, r);
-		//replaceReports(data.reports, r);
 	}
 
 	_removeReports(vec, t?) {

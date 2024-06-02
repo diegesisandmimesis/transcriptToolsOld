@@ -17,7 +17,7 @@ modify CommandReport
 	dobj_ = nil
 	iobj_ = nil
 
-	reportID = nil
+	reportGroup = nil
 	reportSummarizer = nil
 
 	construct() {

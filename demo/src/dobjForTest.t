@@ -54,12 +54,6 @@ class Flower: Thing 'flower*flowers' 'flower'
 		name = '<<color>> flower';
 	}
 
-	dobjFor(Take) {
-		verify() {
-			illogical('{You/He} can\'t pick the flowers. ');
-		}
-	}
-
 	dobjFor(Examine) {
 		// Summarize the examines.
 		summarize(data) { return('It\'s <<data.listNames()>>. '); }
@@ -70,11 +64,6 @@ class RedFlower: Flower color = 'red';
 class BlueFlower: Flower color = 'blue';
 class GreenFlower: Flower color = 'green';
 
-class Pebble: Thing '(small) (round) pebble*pebbles' 'pebble'
-	"A small, round pebble. "
-	isEquivalent = true
-;
-
 startRoom: Room 'Void' "This is a featureless void.";
 +me: Person;
 +RedFlower;
@@ -82,4 +71,4 @@ startRoom: Room 'Void' "This is a featureless void.";
 +GreenFlower;
 
 modify transcriptTools active = true;
-modify syslog initFlags = 'transcript';
+//modify syslog initFlags = 'transcript';
