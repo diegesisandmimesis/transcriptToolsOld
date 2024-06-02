@@ -4,7 +4,9 @@
 //
 //	Debugging stuff.
 //
-//	Enable by compiling with -D SYSLOG
+//	Enable debugging actions by compiling with -d
+//
+//	Enable debugging output by compiling with -d and -D SYSLOG
 //
 //
 #include <adv3.h>
@@ -12,7 +14,8 @@
 
 #include "transcriptTools.h"
 
-#ifdef SYSLOG
+
+#ifdef __DEBUG
 
 DefineSystemAction(TranscriptToolsToggle)
 	execSystemAction() {
@@ -25,6 +28,8 @@ VerbRule(TranscriptToolsToggle)
 	'toggle' 'transcript' 'tools' : TranscriptToolsToggleAction
 	verbPhrase = 'toggle/toggling transcript tools'
 ;
+
+#ifdef SYSLOG
 
 modify CommandReport
 	syslogID = 'CommandReport'
@@ -85,3 +90,5 @@ modify ReportGroup
 ;
 
 #endif // SYSLOG
+
+#endif // __DEBUG
