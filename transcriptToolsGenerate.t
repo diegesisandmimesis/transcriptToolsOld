@@ -1,12 +1,12 @@
 #charset "us-ascii"
 //
-// transcripToolsHeader.t
+// transcripToolsGenerate.t
 //
 //	Code for generating a header file.
 //
-//	Compile with -D TRANSCRIPT_TOOLS_GENERATE_HEADER to enable.
+//	Compile with -D TRANSCRIPT_TOOLS_GENERATE_PATCH to enable.
 //
-//	IMPORTANT: DO NOT COMPILE WITH THE -D TRANSCRIPT_TOOLS_GENERATE_HEADER
+//	IMPORTANT: DO NOT COMPILE WITH THE -D TRANSCRIPT_TOOLS_GENERATE_PATCH
 //		FLAG unless you are building a utility specifically to
 //		generate a header file.  This is NOT code that wants to
 //		be included in a released game.
@@ -16,20 +16,20 @@
 
 #include "transcriptTools.h"
 
-#ifdef TRANSCRIPT_TOOLS_GENERATE_HEADER
+#ifdef TRANSCRIPT_TOOLS_GENERATE_PATCH
 
 modify transcriptTools
 	_symTbl = nil
 	_revSymTbl = nil
 
 	// Entry point for external callers
-	generateHeader(fname) {
+	generatePatch(fname) {
 		local buf;
 
 		buf = new StringBuffer();
 
 		_generateTables();
-		_generateHeader(buf);
+		_generatePatch(buf);
 		if(_stringToFile(buf, fname) == true)
 			"\nWrote header to file <q><<toString(fname)>></q>.\n ";
 		else
@@ -65,7 +65,7 @@ modify transcriptTools
 	}
 
 	// Generate the header itself.
-	_generateHeader(buf) {
+	_generatePatch(buf) {
 		local obj;
 
 		// Comments
@@ -131,4 +131,4 @@ modify transcriptTools
 	}
 ;
 
-#endif // TRANSCRIPT_TOOLS_GENERATE_HEADER
+#endif // TRANSCRIPT_TOOLS_GENERATE_PATCH

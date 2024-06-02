@@ -2,9 +2,9 @@
 -D MESSAGESTYLE=neu
 -Fy obj -Fo obj
 -Fs ../..
--o games/generateHeader.t3
+-o games/generatePatch.t3
 -lib system
 -lib adv3/adv3
 -lib syslog/syslog
 -lib ../transcriptTools
--source src/generateHeader.t
+-source src/generatePatch.t

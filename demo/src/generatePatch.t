@@ -1,6 +1,6 @@
 #charset "us-ascii"
 //
-// generateHeader.t
+// generatePatch.t
 // Version 1.0
 // Copyright 2022 Diegesis & Mimesis
 //
@@ -8,7 +8,7 @@
 //
 // It can be compiled via the included makefile with
 //
-//	# t3make -f generateHeader.t3m
+//	# t3make -f generatePatch.t3m
 //
 // ...or the equivalent, depending on what TADS development environment
 // you're using.
@@ -21,13 +21,13 @@
 
 #include "transcriptTools.h"
 
-#ifndef TRANSCRIPT_TOOLS_GENERATE_HEADER
-#error "This utility must be compiled with -D TRANSCRIPT_TOOLS_GENERATE_HEADER"
-#endif // TRANSCRIPT_TOOLS_GENERATE_HEADER
+#ifndef TRANSCRIPT_TOOLS_GENERATE_PATCH
+#error "This utility must be compiled with -D TRANSCRIPT_TOOLS_GENERATE_PATCH"
+#endif // TRANSCRIPT_TOOLS_GENERATE_PATCH
 
 versionInfo: GameID;
 gameMain: GameMainDef
 	newGame() {
-		transcriptTools.generateHeader('transcriptToolsPatch.t');
+		transcriptTools.generatePatch('transcriptToolsPatch.t');
 	}
 ;

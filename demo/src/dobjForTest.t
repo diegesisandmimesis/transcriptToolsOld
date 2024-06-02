@@ -66,8 +66,6 @@ class Flower: Thing 'flower*flowers' 'flower'
 	}
 ;
 
-;
-
 class RedFlower: Flower color = 'red';
 class BlueFlower: Flower color = 'blue';
 class GreenFlower: Flower color = 'green';

@@ -1,6 +1,7 @@
 #charset "us-ascii"
 //
 // transcriptToolsPatch.t
+//
 //	transcriptTools monkey patch to all TAction
 //	instances declared in adv3
 //
