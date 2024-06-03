@@ -2,6 +2,8 @@
 //
 // transcriptToolsReportManager.t
 //
+//	TranscriptTool class and related stuff for handling report managers.
+//
 //
 #include <adv3.h>
 #include <en_us.h>
@@ -13,8 +15,12 @@
 // want to be handled by which summarizers.  The result of that
 // process is a vector of instances of SummarizerData.
 class SummarizerData: object
+	// The summarizer, i.e. an instance of ReportSummary
 	summarizer = nil
+
+	// The reports to be passed to the summarizer above
 	reports = perInstance(new Vector())
+
 	construct(s) { summarizer = s; }
 ;
 
@@ -28,8 +34,12 @@ class SummarizerData: object
 // We also use DistinguisherData to aggregate implicit reports, in that
 // case using their action as "distinguisher".
 class DistinguisherData: object
+	// The distinguisher text
 	distinguisher = nil
+
+	// Vector of reports sharing the distinguisher above
 	reports = perInstance(new Vector())
+
 	construct(d) { distinguisher = d; }
 ;
 
@@ -39,12 +49,6 @@ class TranscriptReportManager: TranscriptTool
 	// List of report manager classes.  At preinit if we don't
 	// already have an instance of any of these, we'll add one
 	defaultReportManagers = nil
-/*
-	defaultReportManagers = static [
-		GeneralReportManager,
-		SelfReportManager
-	]
-*/
 
 	// List of all of our "personal" report managers.  This is NOT
 	// all the report managers we might use.  This is just the
@@ -190,6 +194,7 @@ class TranscriptReportManager: TranscriptTool
 		return(r);
 	}
 
+	// Get the summarizer for the given report
 	getReportSummarizer(report) {
 		local i, r;
 
@@ -205,6 +210,9 @@ class TranscriptReportManager: TranscriptTool
 		return(nil);
 	}
 
+	// Go through all of the reports we're handling and figure out
+	// which summarizer, if any, wants to handle each of them.
+	// Returns a vector of SummarizerData instances
 	assignSummarizers() {
 		local o, s, vec;
 
@@ -233,15 +241,18 @@ class TranscriptReportManager: TranscriptTool
 		return(vec);
 	}
 
+	// Summarize all the reports being handled by a specific summarizer.
 	// First arg is a SummarizerData instance, second is the transcript
 	// we're working on
 	handleSummary(data, t) {
 		local imp, vec;
 
-		vec = new Vector();
-		imp = new Vector();
+		vec = new Vector();	// normal reports
+		imp = new Vector();	// implicit reports
 
-		// Go through all the reports for this summarizer
+		// Go through all the reports for this summarizer,
+		// populating the implicit and non-implicit vectors
+		// with DistinguisherData instances
 		data.reports.forEach(function(report) {
 			if(report.isActionImplicit())
 				_handleSummaryImplicit(report, imp);
@@ -251,7 +262,8 @@ class TranscriptReportManager: TranscriptTool
 		});
 
 		// If we have more than one distinguisher's worth of
-		// reports, we (obviously) want to use them
+		// reports, we (obviously) want to use distinguisher
+		// announcements
 		if(vec.length > 1)
 			setDistinguisherFlag();
 
@@ -259,17 +271,28 @@ class TranscriptReportManager: TranscriptTool
 		vec.forEach({ x: _handleSummary(data.summarizer, x, t) });
 	}
 
+	// Group implicit action reports by their action.
+	// First arg is a report, second is a vector of DistinguisherData
+	// instances
 	_handleSummaryImplicit(report, vec) {
 		local o;
 
+		// If we haven't seen this report's action before, create
+		// a distinguisher data object for it and add it to the
+		// vector
 		if((o = vec.valWhich({ x: x.distinguisher == vec.action_ }))
 			== nil) {
 			vec.append(new DistinguisherData(vec.action_));
 			o = vec[vec.length];
 		}
+
+		// Add this report to the relevant distinguisher data object
 		o.reports.append(report);
 	}
 
+	// Group reports by their distinguisher announcement text.
+	// First arg is a report, second is a vector of DistinguisherData
+	// instances
 	_handleSummaryNonImplicit(report, vec) {
 		local dist, o;
 
@@ -289,35 +312,62 @@ class TranscriptReportManager: TranscriptTool
 		o.reports.append(report);
 	}
 
+	// Actually create a single non-implicit summary report.
+	// First arg is the summarizer (i.e. a ReportSummary instance).
+	// Second arg is a DistinguisherData instance.
+	// Third arg is the transcript.
 	_handleSummary(summarizer, data, t) {
 		local d, r;
 
+		// Create a SummaryData instance from the reports
 		d = new ReportSummaryData(data.reports);
+
+		// Create the CommandReportSummary from the summarizer's
+		// output
 		r = createSummaryReport(d, summarizer.summarize(d));
+
+		// Mark the summary report as belonging to the same group
+		// as the first parent report
 		r.iter_ = data.reports[1].iter_;
+
+		// Replace the reports with the summary
 		replaceReports(data.reports, r);
 	}
 
+	// Create a single implicit action summary report.
+	// First arg is the summarizer (i.e. a ReportSummary instance).
+	// Second arg is a DistinguisherData instance.
+	// Third arg is the transcript.
 	_handleImplicit(summarizer, data, t) {
 		local d, idx, r, txt;
 
+		// Create a SummaryData instance from the reports
 		d = new ReportSummaryData(data.reports);
+
+		// Get the summary text
 		txt = summarizer.summarize(d);
+
+		// Identify the first report we just summarized that's
+		// an implicit action announcement
 		r = data.reports.valWhich({
 			x: x.ofKind(ImplicitActionAnnouncement)
 		});
+
+		// Get the index in the transcript of our first report
 		idx = t.reports_.indexOf(data.reports[1]);
+
+		// Update the chosen implicit announcement to have the
+		// summary text
 		r.messageText_
 			= '<.p0>\n<.assume><<toString(txt)>><./assume>\n';
 		r.messageProp_ = nil;
 
-		_removeReports(data.reports, t);
+		// Remove our reports from the transcript
+		data.reports.forEach({ x: t.reports_.removeElement(x) });
 
+		// Insert the updated implicit announcement at the location
+		// where our first report was
 		t.reports_.insertAt(idx, r);
-	}
-
-	_removeReports(vec, t?) {
-		vec.forEach({ x: t.reports_.removeElement(x) });
 	}
 
 	// Create the summary report object.

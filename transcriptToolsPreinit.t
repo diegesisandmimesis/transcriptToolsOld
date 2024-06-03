@@ -2,6 +2,9 @@
 //
 // transcriptPreinit.t
 //
+//	Preinit object.  Mostly handles shuffling lexical ownership stuff.
+//
+//
 #include <adv3.h>
 #include <en_us.h>
 

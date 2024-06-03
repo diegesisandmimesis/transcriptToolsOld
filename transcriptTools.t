@@ -34,6 +34,15 @@ class TranscriptTool: TranscriptToolsWidget
 	// The TranscriptTools instance we're a part of
 	parentTools = nil
 
+	// Numeric priority for the tool.
+	// Lower-numbered tools go before higher-numbered tools.  Basic
+	// ordering is something like:
+	//
+	//	100	grouping tools
+	//	200	sorting tools
+	//	300	markup tools
+	//	900	default
+	//
 	toolPriority = 900
 
 	// Called at preinit

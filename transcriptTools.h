@@ -17,10 +17,13 @@
 	(gIsReport(r) ? (r.dobj_ ? r.dobj_.ofKind(cls) : nil) : nil)
 #define gReportAction(r) (gIsReport(r) ? r.action_ : nil)
 
+// Define a macro for the turn number
 #ifndef gTurn
 #define gTurn (libGlobal.totalTurns)
 #endif // gTurn
 
+// Patches for action definition macros.
+// Identical to stock plus the summarizeDobjProp property
 #undef DefineTActionSub
 #define DefineTActionSub(name, cls) \
 	DefineAction(name, cls) \
