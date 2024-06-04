@@ -11,8 +11,92 @@
 //	being able to combine multiple reports into a single summary,
 //	which in this module is handled via the ReportManager class.
 //
-//	The module handles two basic ways of combining reports into a
-//	summary:  combining multiple 
+//	Conceptually the two major kinds of report summary are:
+//
+//		-Summaries for a specific action, possibly involving
+//		 several different kinds of object
+//		-Summaries for a specific kind of object, possibly involving
+//		 several different kinds of action
+//
+//
+// SINGLE ACTION, MULTIPLE OBJECTS
+//
+//	Several of the common examples of the first kind of summary are
+//	handled by default by this module as written.  Example:  summarizing
+//	>TAKE actions involving multiple objects.  So given a rock and a
+//	pebble, instead of the default adv3 behavior of:
+//
+//		>TAKE ALL
+//		pebble: Taken.
+//		rock: Taken.
+//
+//	...with this module by default you get:
+//
+//		>TAKE ALL
+//		You take the pebble and the rock.
+//
+//	By default, this module provides summaries for:
+//
+//		>TAKE
+//		>TAKE FROM
+//		>DROP
+//		>PUT ON
+//		>PUT IN
+//		>PUT UNDER
+//		>PUT BEHIND
+//
+//	If you want to implement your own action summaries you can declare
+//	subclasses of ActionSummary.  The syntax is illustrated by the
+//	summarizer for >TAKE:
+//
+//		class TakeSummary: ActionSummary
+//			action = TakeAction
+//
+//			summarize(data) {
+//				return('{You/He} take{s}
+//					<<data.listNames()>>. ');
+//			}
+//		;
+//
+//	The action property defines what kind of Action the summary is for.
+//	The summarize() method is called with a single argument, an
+//	instance of ReportSummaryData (discussed below), and it needs to
+//	return a text string (the summary text).
+//
+//
+// THE ReportSummaryData CLASS
+//
+//	The argument to the summarize() method is always an instance
+//	of the ReportSummaryData class.  Its properties and methods of note
+//	are:
+//
+//		vec
+//			a vector containing all of the reports to be
+//			summarized
+//		objs
+//			a vector containing all of the direct objects
+//			mentioned in the reports
+//		dobj
+//			pointer to a "representative" direct object
+//			from the reports.  this is intended for cases
+//			where the objects are all equivalent or share
+//			vocabulary.  in cases where this ISN'T true,
+//			the objs vector (or the reports themselves) can
+//			be used to get object references
+//		count
+//			the number of direct objects afffected by the
+//			reports
+//
+//		listNames()
+//			method listing all of the direct objects in the
+//			reports via makeSimpleList()
+//		listNamesWithAnd()
+//			alias for listNames(), which uses "and" as its
+//			conjunction ("you take the pebble and the rock")
+//		listNamesWithOr()
+//			like the above, but uses "or" as its conjunction
+//			("you can't take the pebble or the rock")
+//
 //
 #include <adv3.h>
 #include <en_us.h>
