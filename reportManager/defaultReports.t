@@ -39,6 +39,26 @@ class TakeFromSummary: ActionSummary
 	}
 ;
 
+class DropSummary: ActionSummary
+	action = DropAction
+	matchAction(act) {
+		if(gAction.ofKind(PutOnAction))
+			return(nil);
+		return(inherited(act));
+	}
+;
+class PutOnSummary: ActionSummary
+	action = PutOnAction
+	matchAction(act) {
+		if(inherited(act))
+			return(true);
+		return(act.ofKind(DropAction));
+	}
+;
+class PutInSummary: ActionSummary action = PutInAction;
+class PutUnderSummary: ActionSummary action = PutUnderAction;
+class PutBehindSummary: ActionSummary action = PutBehindAction;
+
 /*
 class TakeFromSummary: ActionSummary
 	action = TakeFromAction
@@ -48,7 +68,6 @@ class TakeFromSummary: ActionSummary
 			from <<gIobj.theName>>. ');
 	}
 ;
-*/
 
 class DropSummary: ActionSummary
 	action = DropAction
@@ -93,6 +112,7 @@ class PutBehindSummary: ActionSummary
 			behind <<gIobj.theName>>. ');
 	}
 ;
+*/
 
 class TakeFailedSummary: FailureSummary
 	action = TakeAction
