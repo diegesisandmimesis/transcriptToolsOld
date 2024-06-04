@@ -8,6 +8,7 @@
 
 #include "transcriptTools.h"
 
+/*
 class ActionSummary: ReportSummary
 	noDistinguisher = true
 	gActionExclude = nil
@@ -20,15 +21,20 @@ class ActionSummary: ReportSummary
 		if(inherited(act) == true)
 			return(true);
 
+		if(!gAction.ofAnyKind(action))
+			return(nil);
+
 		return((actionInclude != nil) && act.ofAnyKind(actionInclude));
 	}
 
 	summarize(data) { return('{You/He} <<data.actionClause()>>.</.p>'); }
 ;
+*/
 
 class TakeSummary: ActionSummary
 	action = TakeAction
 	gActionExclude = TakeFromAction
+	defaultProp = &okayTakeMsg
 ;
 
 class TakeFromSummary: ActionSummary
@@ -48,14 +54,24 @@ class PutInSummary: ActionSummary action = PutInAction;
 class PutUnderSummary: ActionSummary action = PutUnderAction;
 class PutBehindSummary: ActionSummary action = PutBehindAction;
 
-class TakeFailedSummary: FailureSummary
-	action = TakeAction
-
+class ActionFailureSummary: ActionSummary, FailureSummary
 	summarize(data) {
-		return('{You/He} can\'t take <<data.listNamesWithOr()>>. ');
+		return('<.p>{You/He} can\'t '
+			+ '<<data.actionClauseWithOr()>>.</.p>');
 	}
 ;
 
+class TakeFailureSummary: ActionFailureSummary action = TakeAction;
+/*
+class TakeFailureSummary: FailureSummary
+	action = TakeAction
+
+	summarize(data) {
+		//return('{You/He} can\'t take <<data.listNamesWithOr()>>. ');
+		return('{You/He} can\'t <<data.actionClauseWithOr()>>. ');
+	}
+;
+*/
 
 class ImplicitTakeSummary: ImplicitSummary
 	action = TakeAction

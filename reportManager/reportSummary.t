@@ -108,6 +108,8 @@ class ReportSummary: TranscriptToolsObject
 		return(act.ofKind(action));
 	}
 
+	acceptGroup(grp) { return(getActive()); }
+
 	// Decided whether or no we want to summarize this report
 	acceptReport(report) {
 		if(!getActive())
@@ -165,4 +167,32 @@ class ImplicitSummary: ReportSummary
 
 		return(report.isActionImplicit() == true);
 	}
+;
+
+class ActionSummary: ReportSummary
+	noDistinguisher = true
+	gActionExclude = nil
+	actionInclude = nil
+	defaultProp = nil
+
+	acceptReport(report) {
+		//if((defaultProp != nil) && (report.messageProp_ != defaultProp))
+			//return(nil);
+		return(inherited(report));
+	}
+
+	matchAction(act) {
+		if((gActionExclude != nil) && gAction.ofAnyKind(gActionExclude))
+			return(nil);
+
+		if(inherited(act) == true)
+			return(true);
+
+		if(!gAction.ofAnyKind(action))
+			return(nil);
+
+		return((actionInclude != nil) && act.ofAnyKind(actionInclude));
+	}
+
+	summarize(data) { return('{You/He} <<data.actionClause()>>.</.p>'); }
 ;

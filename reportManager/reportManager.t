@@ -128,15 +128,29 @@ class ReportManager: TranscriptToolsWidget
 			: nil);
 	}
 
-	getReportSummarizer(report) {
+	acceptGroup(grp) {
+		local i;
+
+		for(i = 1; i <= _reportManagerSummaries.length; i++) {
+			if(_reportManagerSummaries[i].acceptGroup(grp) == true)
+				return(true);
+		}
+
+		return(nil);
+	}
+
+	getReportSummarizer(report, lst?) {
 		local i;
 
 		if(!matchReportDobj(report.dobj_))
 			return(nil);
 
-		for(i = 1; i <= _reportManagerSummaries.length; i++) {
-			if(_reportManagerSummaries[i].acceptReport(report))
-				return(_reportManagerSummaries[i]);
+		if(lst == nil)
+			lst = _reportManagerSummaries;
+
+		for(i = 1; i <= lst.length; i++) {
+			if(lst[i].acceptReport(report))
+				return(lst[i]);
 		}
 
 		return(nil);

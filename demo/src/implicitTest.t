@@ -115,4 +115,4 @@ startRoom: Room 'Void' "This is a featureless void.";
 ;
 
 modify transcriptTools active = true;
-modify syslog initFlags = 'transcript';
+//modify syslog initFlags = 'transcript';

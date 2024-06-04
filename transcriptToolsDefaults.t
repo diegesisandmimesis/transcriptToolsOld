@@ -40,7 +40,8 @@ modify GeneralReportManager
 		PutUnderSummary,
 		PutBehindSummary,
 
-		TakeFailedSummary,
+		TakeFailureSummary,
+		//PutInFailureSummary,
 
 		ImplicitTakeSummary
 	]

@@ -27,7 +27,7 @@ modify CommandReport
 	}
 
 	// Figure out what summarizer, if any, to use for this report.
-	getReportSummarizer() {
+	getReportSummarizer(lst?) {
 		// If we already figured it out, use the saved value
 		if(reportSummarizer != nil)
 			return(reportSummarizer);
@@ -40,7 +40,7 @@ modify CommandReport
 		// As the report manager who should summarize us, remembering
 		// the result
 		reportSummarizer = dobj_.reportManager
-			.getReportSummarizer(self);
+			.getReportSummarizer(self, lst);
 
 		return(reportSummarizer);
 	}

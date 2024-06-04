@@ -253,27 +253,27 @@ class TranscriptReportManager: TranscriptTool
 */
 
 	// Figure out if anyone wants to summarize this report
-	assignSummarizer(report) {
+	assignSummarizer(report, lst?) {
 		local r;
 
-		if((r = report.getReportSummarizer()) != nil)
+		if((r = report.getReportSummarizer(lst)) != nil)
 			return(r);
 
-		r = getReportSummarizer(report);
+		r = getReportSummarizer(report, lst);
 
 		return(r);
 	}
 
 	// Get the summarizer for the given report
-	getReportSummarizer(report) {
+	getReportSummarizer(report, lst) {
 		local i, r;
 
 		if(_reportManagers == nil)
 			return(nil);
 
 		for(i = 1; i <= _reportManagers.length; i++) {
-			if((r = _reportManagers[i].getReportSummarizer(report))
-				!= nil)
+			if((r = _reportManagers[i].getReportSummarizer(report,
+				lst)) != nil)
 				return(r);
 		}
 
@@ -284,10 +284,11 @@ class TranscriptReportManager: TranscriptTool
 	// which summarizer, if any, wants to handle each of them.
 	// Returns a vector of SummarizerData instances
 	assignSummarizers() {
-		local o, s, vec;
+		local lst, o, s, vec;
 
 		vec = new Vector(8);
 
+/*
 		// Go through the list of reports, checking to see if
 		// there's a summarizer that wants to summarize it.
 		forEachReport(function(report) {
@@ -307,8 +308,48 @@ class TranscriptReportManager: TranscriptTool
 			// Add this report to the reports for this summarizer
 			o.reports.append(report);
 		});
+*/
+		forEachReportGroup(function(grp) {
+			if((lst = querySummarizersForGroup(grp)) == nil)
+				return;
+			grp.forEachReport(function(report) {
+				if((s = assignSummarizer(report, lst))
+					== nil)
+					return;
+				if((o = vec.valWhich({
+					x: x.summarizer == s
+				})) == nil) {
+					vec.append(new SummarizerData(s));
+					o = vec[vec.length];
+				}
+				o.reports.append(report);
+			});
+		});
 
 		return(vec);
+	}
+
+	querySummarizersForGroup(grp) {
+		local i, m, r;
+
+		r = new Vector();
+
+		grp.forEachReport(function(o) {
+			if((o.dobj_ == nil) || (o.dobj_.reportManager == nil))
+				return;
+			m = o.dobj_.reportManager;
+			if(m.acceptGroup(grp) == true)
+				m.forEachSummary({ x: r.append(x) });
+		});
+
+
+		for(i = 1; i <= _reportManagers.length; i++) {
+			m = _reportManagers[i];
+			if(m.acceptGroup(grp) == true)
+				m.forEachSummary({ x: r.append(x) });
+		}
+
+		return(r);
 	}
 
 	// Summarize all the reports being handled by a specific summarizer.
@@ -402,6 +443,9 @@ class TranscriptReportManager: TranscriptTool
 		// output
 		r = createSummaryReport(d, summarizer.summarize(d),
 			(summarizer.noDistinguisher ? true : nil));
+
+		r.isFailure = summarizer.isFailure;
+		r.dobj_ = nil;
 
 		// Mark the summary report as belonging to the same group
 		// as the first parent report

@@ -52,6 +52,22 @@ modify CommandReport
 	}
 ;
 
+modify CommandTranscript
+	syslogID = 'CommandTranscript'
+
+	getSyslogID() { return(syslogID ? syslogID : toString(self)); }
+	_debug(msg, flg?) { syslog.debug(getSyslogID(), msg, flg); }
+	_error(msg) { syslog.error(getSyslogID(), msg); }
+
+	_debugTranscript(tag?) {
+		_debug('=====TRANSCRIPT START=====', tag);
+		_debug('\ttranscript contains <<toString(reports_.length)>>
+			reports', tag);
+		reports_.forEach({ x: x._debugReport(tag) });
+		_debug('=====TRANSCRIPT END=====', tag);
+	}
+;
+
 modify TranscriptTools
 	_debugTranscript(tag?) {
 		local t;
