@@ -43,12 +43,58 @@ class DistinguisherData: object
 	construct(d) { distinguisher = d; }
 ;
 
+// Data structure for handling the deliberations about whether or not
+// to include distinguisher announcements with report summaries.
+class DistinguisherConfig: object
+	distinguishers = 0
+	summarizers = 0
+	summarizedDobjCount = 0
+	transcriptDobjCount = 0
+
+	setSummarizerVector(lst) {
+		local v;
+
+		if(lst == nil)
+			return;
+
+		v = new Vector(lst.length);
+		lst.forEach(function(o) {
+			o.reports.forEach({ x: v.appendUnique(x.dobj_) });
+			if(!o.summarizer.isImplicit)
+				summarizers += 1;
+		});
+
+		summarizedDobjCount = v.length;
+
+		if(gAction && gAction.dobjList_)
+			transcriptDobjCount = gAction.dobjList_.length;
+	}
+
+	countDistinguishers(lst) {
+		distinguishers = lst.length;
+	}
+
+	check() {
+		return((distinguishers > 1) || (summarizers > 1)
+			|| (summarizedDobjCount != transcriptDobjCount));
+	}
+
+	clear() {
+		distinguishers = 0;
+		summarizers = 0;
+		summarizedDobjCount = 0;
+		transcriptDobjCount = 0;
+	}
+;
+
 class TranscriptReportManager: TranscriptTool
 	toolPriority = 500
 
 	// List of report manager classes.  At preinit if we don't
 	// already have an instance of any of these, we'll add one
 	defaultReportManagers = nil
+
+	_distinguisherConfig = perInstance(new DistinguisherConfig)
 
 	// List of all of our "personal" report managers.  This is NOT
 	// all the report managers we might use.  This is just the
@@ -118,8 +164,9 @@ class TranscriptReportManager: TranscriptTool
 	}
 
 	// Getter and setter for the distinguisher flag
-	getDistinguisherFlag() { return(_distinguisherFlag == true); }
-	setDistinguisherFlag() { _distinguisherFlag = true; }
+	//getDistinguisherFlag() { return(_distinguisherFlag == true); }
+	//setDistinguisherFlag() { _distinguisherFlag = true; }
+	getDistinguisherFlag() { return(_distinguisherConfig.check()); }
 
 	// Main lifecycle method, called by our TranscriptTool parent
 	// during afterActionMain()
@@ -133,7 +180,8 @@ class TranscriptReportManager: TranscriptTool
 		_timestamp = gTurn;
 
 		// Reset the distinguisher flag.
-		_distinguisherFlag = nil;
+		//_distinguisherFlag = nil;
+		_distinguisherConfig.clear();
 
 		// If we can't get the granscript for some reason, die
 		// out of shame
@@ -150,8 +198,17 @@ class TranscriptReportManager: TranscriptTool
 
 		// If we have more than one bunch of reports to summarize,
 		// we'll use distinguishers to distinguish them.
-		if(vec.length > 1)
-			setDistinguisherFlag();
+		_distinguisherConfig.setSummarizerVector(vec);
+/*
+		vec.forEach(function(o) {
+			if(!o.summarizer.isImplicit)
+				_distinguisherConfig.
+		});
+		if(n > 1) {
+			//setDistinguisherFlag();
+			_distinguisherConfig.summarizers 
+		}
+*/
 
 		// See if we've got as many summaries as we have objects.
 		// This is for the specific case where all of our reports
@@ -159,13 +216,17 @@ class TranscriptReportManager: TranscriptTool
 		// check for that, because if we're summarizing all reports
 		// but splitting them into multiple summaries we'll pick
 		// that up elsewhere.
-		if(getTotalDobjCount() != getSummarizedDobjCount(vec))
+/*
+		if(getTotalDobjCount() != getSummarizedDobjCount(vec)) {
 			setDistinguisherFlag();
+		}
+*/
 
 		// Actually summarize the reports.
 		vec.forEach({ x: handleSummary(x, t) });
 	}
 
+/*
 	// Total number of direct objects mentioned in the current
 	// action
 	getTotalDobjCount() {
@@ -175,12 +236,15 @@ class TranscriptReportManager: TranscriptTool
 
 	// Get the number of reports we're summarizing.
 	getSummarizedDobjCount(vec) {
-		local n;
+		local v;
 
-		n = 0;
-		vec.forEach({ x: n += x.reports.length });
-		return(n);
+		v = new Vector(vec.length);
+		vec.forEach(function(o) {
+			o.reports.forEach({ x: v.appendUnique(x.dobj_) });
+		});
+		return(v.length);
 	}
+*/
 
 	// Figure out if anyone wants to summarize this report
 	assignSummarizer(report) {
@@ -255,17 +319,23 @@ class TranscriptReportManager: TranscriptTool
 		// with DistinguisherData instances
 		data.reports.forEach(function(report) {
 			if(report.isActionImplicit())
-				_handleSummaryImplicit(report, imp);
+				_groupReportsByAction(report, imp);
+			else if(data.summarizer.noDistinguisher == true)
+				_groupReportsByAction(report, vec);
 			else
-				_handleSummaryNonImplicit(report, vec);
+				_groupReportsByDistinguisher(report, vec);
 
 		});
 
 		// If we have more than one distinguisher's worth of
 		// reports, we (obviously) want to use distinguisher
 		// announcements
-		if(vec.length > 1)
+/*
+		if(vec.length > 1) {
 			setDistinguisherFlag();
+		}
+*/
+		_distinguisherConfig.countDistinguishers(vec);
 
 		imp.forEach({ x: _handleImplicit(data.summarizer, x, t) });
 		vec.forEach({ x: _handleSummary(data.summarizer, x, t) });
@@ -274,7 +344,7 @@ class TranscriptReportManager: TranscriptTool
 	// Group implicit action reports by their action.
 	// First arg is a report, second is a vector of DistinguisherData
 	// instances
-	_handleSummaryImplicit(report, vec) {
+	_groupReportsByAction(report, vec) {
 		local o;
 
 		// If we haven't seen this report's action before, create
@@ -293,7 +363,7 @@ class TranscriptReportManager: TranscriptTool
 	// Group reports by their distinguisher announcement text.
 	// First arg is a report, second is a vector of DistinguisherData
 	// instances
-	_handleSummaryNonImplicit(report, vec) {
+	_groupReportsByDistinguisher(report, vec) {
 		local dist, o;
 
 		// Get the distinguisher for this report
@@ -324,7 +394,8 @@ class TranscriptReportManager: TranscriptTool
 
 		// Create the CommandReportSummary from the summarizer's
 		// output
-		r = createSummaryReport(d, summarizer.summarize(d));
+		r = createSummaryReport(d, summarizer.summarize(d),
+			(summarizer.noDistinguisher ? true : nil));
 
 		// Mark the summary report as belonging to the same group
 		// as the first parent report
@@ -375,15 +446,14 @@ class TranscriptReportManager: TranscriptTool
 	// Second arg is the summary text.
 	// Optional third arg is the distinguisher announcement.  If
 	// not given it will be computed if needed.
-	createSummaryReport(data, msg, dist?) {
-		local txt;
+	createSummaryReport(data, msg, noDist?) {
+		local dist, txt;
 
 		txt = new StringBuffer();
 
-		if(getDistinguisherFlag() == true) {
-			if(dist == nil)
-				dist = getReportDistinguisher(data.dobj,
-					data.vec.length);
+		if(!noDist && (getDistinguisherFlag() == true)) {
+			dist = getReportDistinguisher(data.dobj,
+				data.vec.length);
 			txt.append('<./p0>\n<.announceObj>');
 			txt.append(dist);
 			txt.append(':<./announceObj> <.p0>');

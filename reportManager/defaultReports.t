@@ -8,7 +8,11 @@
 
 #include "transcriptTools.h"
 
-class TakeSummary: ReportSummary
+class ActionSummary: ReportSummary
+	noDistinguisher = true
+;
+
+class TakeSummary: ActionSummary
 	action = TakeAction
 
 	summarize(data) {
@@ -16,7 +20,7 @@ class TakeSummary: ReportSummary
 	}
 ;
 
-class TakeFromSummary: ReportSummary
+class TakeFromSummary: ActionSummary
 	action = TakeFromAction
 
 	summarize(data) {
@@ -25,7 +29,7 @@ class TakeFromSummary: ReportSummary
 	}
 ;
 
-class DropSummary: ReportSummary
+class DropSummary: ActionSummary
 	action = DropAction
 
 	summarize(data) {
@@ -33,7 +37,7 @@ class DropSummary: ReportSummary
 	}
 ;
 
-class PutOnSummary: ReportSummary
+class PutOnSummary: ActionSummary
 	action = PutOnAction
 
 	summarize(data) {
@@ -42,7 +46,7 @@ class PutOnSummary: ReportSummary
 	}
 ;
 
-class PutInSummary: ReportSummary
+class PutInSummary: ActionSummary
 	action = PutInAction
 
 	summarize(data) {
@@ -51,7 +55,7 @@ class PutInSummary: ReportSummary
 	}
 ;
 
-class PutUnderSummary: ReportSummary
+class PutUnderSummary: ActionSummary
 	action = PutUnderAction
 
 	summarize(data) {
@@ -60,7 +64,7 @@ class PutUnderSummary: ReportSummary
 	}
 ;
 
-class PutBehindSummary: ReportSummary
+class PutBehindSummary: ActionSummary
 	action = PutBehindAction
 
 	summarize(data) {
@@ -83,6 +87,7 @@ class ImplicitTakeSummary: ImplicitSummary
 
 	summarize(data) { return('first taking <<data.listNames()>>'); }
 ;
+
 
 // Special summarizer designed for use with SelfReportManager.
 // This calls dobjFor(Action) { summarize(data) {} } summarizers.

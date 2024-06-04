@@ -2,6 +2,18 @@
 //
 // transcriptTools.t
 //
+//	A TADS3/adv3 module for managing reports and the transcript.
+//
+//
+// USAGE
+//
+//	Most game implementors will probably be most concerned with
+//	being able to combine multiple reports into a single summary,
+//	which in this module is handled via the ReportManager class.
+//
+//	The module handles two basic ways of combining reports into a
+//	summary:  combining multiple 
+//
 #include <adv3.h>
 #include <en_us.h>
 

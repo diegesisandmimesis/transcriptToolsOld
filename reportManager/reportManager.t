@@ -48,7 +48,7 @@ class ReportManager: TranscriptToolsWidget
 
 	// Flag to indicate whether or not we need object distinguisher
 	// announcements.
-	_distinguisherFlag = nil
+	//_distinguisherFlag = nil
 
 	// Preinit method.
 	initializeReportManager() {
@@ -135,11 +135,6 @@ class ReportManager: TranscriptToolsWidget
 			return(nil);
 
 		for(i = 1; i <= _reportManagerSummaries.length; i++) {
-/*
-			if((_reportManagerSummaries[i].isImplicit == true)
-				&& !report.isActionImplicit())
-				continue;
-*/
 			if(_reportManagerSummaries[i].acceptReport(report))
 				return(_reportManagerSummaries[i]);
 		}
