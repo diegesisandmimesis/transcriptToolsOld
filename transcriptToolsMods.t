@@ -55,6 +55,20 @@ modify Action
 		if(parentAction == nil)
 			transcriptTools.afterActionMain();
 	}
+
+	ofAnyKind(val) {
+		local i;
+
+		if(!val.ofKind(Collection))
+			return(self.ofKind(val));
+
+		for(i = 1; i <= val.length; i++) {
+			if(self.ofKind(val[i]))
+				return(true);
+		}
+
+		return(nil);
+	}
 ;
 
 // Ping transcriptTools after every TAction

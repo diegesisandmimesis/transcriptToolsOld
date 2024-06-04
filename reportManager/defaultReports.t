@@ -10,109 +10,43 @@
 
 class ActionSummary: ReportSummary
 	noDistinguisher = true
+	gActionExclude = nil
+	actionInclude = nil
+
+	matchAction(act) {
+		if((gActionExclude != nil) && gAction.ofAnyKind(gActionExclude))
+			return(nil);
+
+		if(inherited(act) == true)
+			return(true);
+
+		return((actionInclude != nil) && act.ofAnyKind(actionInclude));
+	}
 
 	summarize(data) { return('{You/He} <<data.actionClause()>>.</.p>'); }
 ;
 
 class TakeSummary: ActionSummary
 	action = TakeAction
-
-	// >TAKE FROM ends up being mapped to >TAKE, so we check to
-	// see if that's happening and if so defer to TakeFromSummary.
-	matchAction(act) {
-		if(gAction.ofKind(TakeFromAction))
-			return(nil);
-		return(inherited(act));
-	}
+	gActionExclude = TakeFromAction
 ;
 
 class TakeFromSummary: ActionSummary
 	action = TakeFromAction
-
-	// >TAKE FROM ends up mapped to >TAKE, so we want to grab
-	// reports for TakeAction as well as the TakeFromAction reports
-	// we'd get if we did nothing here
-	matchAction(act) {
-		if(inherited(act))
-			return(true);
-		return(act.ofKind(TakeAction));
-	}
+	actionInclude = TakeAction
 ;
 
 class DropSummary: ActionSummary
 	action = DropAction
-	matchAction(act) {
-		if(gAction.ofKind(PutOnAction))
-			return(nil);
-		return(inherited(act));
-	}
+	gActionExclude = PutOnAction
 ;
 class PutOnSummary: ActionSummary
 	action = PutOnAction
-	matchAction(act) {
-		if(inherited(act))
-			return(true);
-		return(act.ofKind(DropAction));
-	}
+	actionInclude = DropAction
 ;
 class PutInSummary: ActionSummary action = PutInAction;
 class PutUnderSummary: ActionSummary action = PutUnderAction;
 class PutBehindSummary: ActionSummary action = PutBehindAction;
-
-/*
-class TakeFromSummary: ActionSummary
-	action = TakeFromAction
-
-	summarize(data) {
-		return('{You/He} take{s} <<data.listNames()>>
-			from <<gIobj.theName>>. ');
-	}
-;
-
-class DropSummary: ActionSummary
-	action = DropAction
-
-	summarize(data) {
-		return('{You/He} drop{s} <<data.listNames()>>. ');
-	}
-;
-
-class PutOnSummary: ActionSummary
-	action = PutOnAction
-
-	summarize(data) {
-		return('{You/He} put{s} <<data.listNames()>>
-			on <<gIobj.theName>>. ');
-	}
-;
-
-class PutInSummary: ActionSummary
-	action = PutInAction
-
-	summarize(data) {
-		return('{You/He} put{s} <<data.listNames()>>
-			in <<gIobj.theName>>. ');
-	}
-;
-
-class PutUnderSummary: ActionSummary
-	action = PutUnderAction
-
-	summarize(data) {
-		return('{You/He} put{s} <<data.listNames()>>
-			under <<gIobj.theName>>. ');
-	}
-;
-
-class PutBehindSummary: ActionSummary
-	action = PutBehindAction
-
-	summarize(data) {
-		return('{You/He} put{s} <<data.listNames()>>
-			behind <<gIobj.theName>>. ');
-	}
-;
-*/
 
 class TakeFailedSummary: FailureSummary
 	action = TakeAction
