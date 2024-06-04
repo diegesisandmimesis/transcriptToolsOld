@@ -215,6 +215,7 @@ class ReportManager: TranscriptToolsWidget
 	checkReport(report) { return(true); }
 
 	forEachSummary(fn) {  _reportManagerSummaries.forEach({ x: fn(x) }); }
+	forEachReport(fn) { parentTools.forEachReport(fn); }
 ;
 
 // General non-object-specific report manager.

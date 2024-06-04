@@ -137,8 +137,14 @@ class TranscriptReportManager: TranscriptTool
 	// 	use.  This is ONLY for ones we've created for our own
 	//	use.
 	addReportManager(obj) {
+		if((obj == nil) || !obj.ofKind(ReportManager))
+			return;
+
 		if(_reportManagers == nil)
 			_reportManagers = new Vector();
+
+		obj.parentTools = self;
+
 		_reportManagers.append(obj);
 	}
 

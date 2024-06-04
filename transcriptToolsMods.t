@@ -59,9 +59,46 @@ modify Action
 
 // Ping transcriptTools after every TAction
 modify TAction
+	conjugation = nil
+
 	afterActionMain() {
 		inherited();
 		transcriptToolsAfterActionMain();
+	}
+
+	verbPattern = static new RexPattern('(.*)(?=/)')
+
+	verbName() {
+		rexMatch(verbPattern, verbPhrase);
+		return(rexGroup(1)[3]);
+	}
+
+	conjugateVerb(str) {
+		if(conjugation != nil)
+			return(conjugation);
+
+		return(gActor.conjugateRegularVerb(str));
+	}
+
+	actionClause(dobjStr, iobjStr?) {
+		return(conjugateVerbPhrase(_actionClause(dobjStr, iobjStr)));
+	}
+	
+	conjugateVerbPhrase(str) {
+		local cName, vName;
+
+		vName = verbName();
+		cName = conjugateVerb(vName);
+
+		if(vName != cName)
+			str = rexReplace('%<' + vName + '%>', str,
+				cName, ReplaceAll);
+
+		return(str);
+	}
+
+	_actionClause(dobjStr, iobjStr?){
+		return(getVerbPhrase1(true, verbPhrase, dobjStr, nil));
 	}
 ;
 
@@ -70,6 +107,10 @@ modify TIAction
 	afterActionMain() {
 		inherited();
 		transcriptToolsAfterActionMain();
+	}
+
+	_actionClause(dobjStr, iobjStr) {
+		return(getVerbPhrase2(true, verbPhrase, dobjStr, nil, iobjStr));
 	}
 ;
 

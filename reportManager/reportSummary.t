@@ -13,6 +13,8 @@ class ReportSummaryData: object
 	vec = nil
 	objs = nil
 	dobj = nil
+	iobj = nil
+	action = nil
 	count = nil
 
 	failures = nil
@@ -24,8 +26,13 @@ class ReportSummaryData: object
 		if((v == nil) || (v.length < 1))
 			return;
 
+		if(gIobj != nil)
+			iobj = gIobj;
+
 		objs = new Vector(v.length);
 		vec.forEach(function(o) {
+			if((action == nil) && o.action_ != nil)
+				action = o.action_;
 			objs.appendUnique(o.dobj_);
 		});
 
@@ -42,6 +49,27 @@ class ReportSummaryData: object
 	listNames() { return(equivalentLister.makeSimpleList(objs)); }
 	listNamesWithAnd() { return(listNames()); }
 	listNamesWithOr() { return(equivalentOrLister.makeSimpleList(objs)); }
+
+	listIobj() { return(iobj ? iobj.theName : nil); }
+
+	getAction() {
+		if(iobj == nil)
+			return(action);
+		if(!action.ofKind(TIAction))
+			vec.forEach(function(o) {
+				if(o.action_ && o.action_.ofKind(TIAction))
+					action = o.action_;
+			});
+		return(action);
+	}
+
+	actionClause() {
+		return(getAction().actionClause(listNames(), listIobj()));
+	}
+	actionClauseWithAnd() { return(actionClause()); }
+	actionClauseWithOr() {
+		return(getAction().actionClause(listNamesWithOr(), listIobj()));
+	}
 ;
 
 class ReportSummary: TranscriptToolsObject
@@ -108,6 +136,20 @@ class ReportSummary: TranscriptToolsObject
 	summarize(data) {}
 
 	reportSummaryMessageParams(obj?) {}
+
+	cleanupReports(action) {
+		local v;
+
+		v = new Vector();
+		forEachReport(function(o) {
+			if(o.action_ && o.action_.ofKind(action))
+				v.append(o);
+		});
+		v.forEach({ x: removeReport(x) });
+	}
+
+	forEachReport(fn) { reportManager.parentTools.forEachReport(fn); }
+	removeReport(r) { reportManager.parentTools.removeReport(r); }
 ;
 
 class FailureSummary: ReportSummary

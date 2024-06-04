@@ -107,6 +107,7 @@ startRoom: Room 'Void' "This is a featureless void.";
 	}
 ;
 ++Pebble;
+++Pebble;
 +Container '(delicate) vase' 'vase' "A delicate vase. "
 	dobjFor(Take) {
 		verify() { illogical('{You/He} can\'t take the vase. '); }

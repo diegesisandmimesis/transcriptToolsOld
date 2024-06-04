@@ -10,16 +10,36 @@
 
 class ActionSummary: ReportSummary
 	noDistinguisher = true
+
+	summarize(data) { return('{You/He} <<data.actionClause()>>.</.p>'); }
 ;
 
 class TakeSummary: ActionSummary
 	action = TakeAction
 
-	summarize(data) {
-		return('{You/He} take{s} <<data.listNames()>>. ');
+	// >TAKE FROM ends up being mapped to >TAKE, so we check to
+	// see if that's happening and if so defer to TakeFromSummary.
+	matchAction(act) {
+		if(gAction.ofKind(TakeFromAction))
+			return(nil);
+		return(inherited(act));
 	}
 ;
 
+class TakeFromSummary: ActionSummary
+	action = TakeFromAction
+
+	// >TAKE FROM ends up mapped to >TAKE, so we want to grab
+	// reports for TakeAction as well as the TakeFromAction reports
+	// we'd get if we did nothing here
+	matchAction(act) {
+		if(inherited(act))
+			return(true);
+		return(act.ofKind(TakeAction));
+	}
+;
+
+/*
 class TakeFromSummary: ActionSummary
 	action = TakeFromAction
 
@@ -28,6 +48,7 @@ class TakeFromSummary: ActionSummary
 			from <<gIobj.theName>>. ');
 	}
 ;
+*/
 
 class DropSummary: ActionSummary
 	action = DropAction

@@ -15,4 +15,5 @@ source: transcriptToolsLister.t
 source: transcriptToolsPreinit.t
 source: transcriptToolsDefaults.t
 source: transcriptToolsGenerate.t
+source: transcriptToolsConjugation.t
 source: transcriptToolsDebug.t
