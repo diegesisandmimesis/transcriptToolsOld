@@ -11,7 +11,6 @@
 #include "transcriptTools.h"
 
 // Now we modify the distinguishers.
-// We add an "aOrCountName" method to each, which we use for 
 modify nullDistinguisher
 	canDistinguish(a, b) { return(a.reportName != b.reportName); }
 	aOrCountName(obj, n) {

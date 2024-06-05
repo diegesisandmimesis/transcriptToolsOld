@@ -2,6 +2,8 @@
 //
 // reportManager.t
 //
+//	Report manager class declarations.
+//
 //
 #include <adv3.h>
 #include <en_us.h>
@@ -122,27 +124,6 @@ class ReportManager: TranscriptToolsWidget
 
 		return(true);
 	}
-
-
-/*
-	getDistinguisherFlag() {
-		return(parentTools ? parentTools._distinguisherFlag == true
-			: nil);
-	}
-*/
-
-/*
-	acceptGroup(grp) {
-		local i;
-
-		for(i = 1; i <= _reportManagerSummaries.length; i++) {
-			if(_reportManagerSummaries[i].acceptGroup(grp) == true)
-				return(true);
-		}
-
-		return(nil);
-	}
-*/
 
 	getReportSummarizer(report, lst?) {
 		local i;
