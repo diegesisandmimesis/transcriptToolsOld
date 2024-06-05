@@ -10,91 +10,6 @@
 
 #include "transcriptTools.h"
 
-/*
-// Data structure for holding the reports for a specific summarizer.
-// Normal flow is to go through the transcript and see which reports
-// want to be handled by which summarizers.  The result of that
-// process is a vector of instances of SummarizerData.
-class SummarizerData: object
-	// The summarizer, i.e. an instance of ReportSummary
-	summarizer = nil
-
-	// The reports to be passed to the summarizer above
-	reports = perInstance(new Vector())
-
-	construct(s) { summarizer = s; }
-;
-
-// Data structure for holding the reports for a specific distinguisher
-// announcement
-// In the normal flow of processing the reports for each summarizer (as
-// organized into SummarizerData instances, above) are iterated through,
-// determining what object distinguisher announcement, if any, is needed
-// for disambiguation in the report.  In this case the distinguisher
-// is the noun phrase before the colon in the output.
-// We also use DistinguisherData to aggregate implicit reports, in that
-// case using their action as "distinguisher".
-class DistinguisherData: object
-	// The distinguisher text
-	distinguisher = nil
-
-	// Vector of reports sharing the distinguisher above
-	reports = perInstance(new Vector())
-
-	construct(d) { distinguisher = d; }
-;
-*/
-
-/*
-// Data structure for handling the deliberations about whether or not
-// to include distinguisher announcements with report summaries.
-class DistinguisherConfig: object
-	distinguishers = 0
-	summarizers = 0
-	summarizedDobjCount = 0
-	transcriptDobjCount = 0
-	noDistinguisher = nil
-
-	setSummarizerVector(lst) {
-		local v;
-
-		if(lst == nil)
-			return;
-
-		v = new Vector(lst.length);
-		lst.forEach(function(o) {
-			o.reports.forEach({ x: v.appendUnique(x.dobj_) });
-			if(!o.summarizer.isImplicit)
-				summarizers += 1;
-		});
-
-		summarizedDobjCount = v.length;
-
-		if(gAction && gAction.dobjList_)
-			transcriptDobjCount = gAction.dobjList_.length;
-	}
-
-	countDistinguishers(lst) {
-		distinguishers = lst.length;
-	}
-
-	check() {
-		if(((distinguishers > 1) || (summarizers > 1)
-			|| (summarizedDobjCount != transcriptDobjCount)))
-			return(true);
-		return(!noDistinguisher);
-	}
-
-	clear() {
-		distinguishers = 0;
-		summarizers = 0;
-		summarizedDobjCount = 0;
-		transcriptDobjCount = 0;
-		noDistinguisher = nil;
-	}
-;
-*/
-
 class TranscriptReportManager: TranscriptTool
 	toolPriority = 500
 
@@ -210,45 +125,13 @@ class TranscriptReportManager: TranscriptTool
 		if(vec.length < 1)
 			return;
 
-		// If we have more than one bunch of reports to summarize,
-		// we'll use distinguishers to distinguish them.
-		distinguisherConfig.setSummarizerVector(vec);
-
-		// See if we've got as many summaries as we have objects.
-		// This is for the specific case where all of our reports
-		// end up in a single summary.  We don't have to explicitly
-		// check for that, because if we're summarizing all reports
-		// but splitting them into multiple summaries we'll pick
-		// that up elsewhere.
-/*
-		if(getTotalDobjCount() != getSummarizedDobjCount(vec)) {
-			setDistinguisherFlag();
-		}
-*/
+		// Let the distinguisher config know how many summarizers
+		// we've decided to use.
+		distinguisherConfig.countSummarizers(vec);
 
 		// Actually summarize the reports.
 		vec.forEach({ x: handleSummary(x, t) });
 	}
-
-/*
-	// Total number of direct objects mentioned in the current
-	// action
-	getTotalDobjCount() {
-		return((gAction && gAction.dobjList_)
-			? gAction.dobjList_.length : 0);
-	}
-
-	// Get the number of reports we're summarizing.
-	getSummarizedDobjCount(vec) {
-		local v;
-
-		v = new Vector(vec.length);
-		vec.forEach(function(o) {
-			o.reports.forEach({ x: v.appendUnique(x.dobj_) });
-		});
-		return(v.length);
-	}
-*/
 
 	// Figure out if anyone wants to summarize this report
 	assignSummarizer(report, lst?) {
@@ -286,27 +169,6 @@ class TranscriptReportManager: TranscriptTool
 
 		vec = new Vector(8);
 
-/*
-		// Go through the list of reports, checking to see if
-		// there's a summarizer that wants to summarize it.
-		forEachReport(function(report) {
-			// No summarizer, nothing to do
-			if((s = assignSummarizer(report)) == nil)
-				return;
-
-			// If we haven't seen this summarizer before,
-			// create a new summary data object for it
-			if((o = vec.valWhich({
-				x: x.summarizer == s
-			})) == nil) {
-				vec.append(new SummarizerData(s));
-				o = vec[vec.length];
-			}
-
-			// Add this report to the reports for this summarizer
-			o.reports.append(report);
-		});
-*/
 		// Go through each report group, generating a list of
 		// candidate summarizers for the reports.
 		forEachReportGroup(function(grp) {
@@ -393,14 +255,8 @@ class TranscriptReportManager: TranscriptTool
 
 		});
 
-		// If we have more than one distinguisher's worth of
-		// reports, we (obviously) want to use distinguisher
-		// announcements
-/*
-		if(vec.length > 1) {
-			setDistinguisherFlag();
-		}
-*/
+		// Let the distinguisher config know how many distinguishers
+		// we've come up with
 		distinguisherConfig.countDistinguishers(vec);
 
 		imp.forEach({ x: _handleImplicit(data.summarizer, x, t) });
