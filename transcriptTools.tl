@@ -5,6 +5,8 @@ source: transcriptToolsMods.t
 source: transcriptToolsGroup.t
 source: transcriptToolsMark.t
 source: transcriptToolsSort.t
+source: transcriptToolsData.t
+source: transcriptToolsDistinguisher.t
 source: transcriptToolsReportManager.t
 source: reportManager/reportManager.t
 source: reportManager/reportSummary.t

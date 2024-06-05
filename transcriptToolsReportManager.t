@@ -10,6 +10,7 @@
 
 #include "transcriptTools.h"
 
+/*
 // Data structure for holding the reports for a specific summarizer.
 // Normal flow is to go through the transcript and see which reports
 // want to be handled by which summarizers.  The result of that
@@ -42,7 +43,9 @@ class DistinguisherData: object
 
 	construct(d) { distinguisher = d; }
 ;
+*/
 
+/*
 // Data structure for handling the deliberations about whether or not
 // to include distinguisher announcements with report summaries.
 class DistinguisherConfig: object
@@ -90,6 +93,7 @@ class DistinguisherConfig: object
 		noDistinguisher = nil;
 	}
 ;
+*/
 
 class TranscriptReportManager: TranscriptTool
 	toolPriority = 500
@@ -98,7 +102,7 @@ class TranscriptReportManager: TranscriptTool
 	// already have an instance of any of these, we'll add one
 	defaultReportManagers = nil
 
-	_distinguisherConfig = perInstance(new DistinguisherConfig)
+	distinguisherConfig = perInstance(new DistinguisherConfig)
 
 	// List of all of our "personal" report managers.  This is NOT
 	// all the report managers we might use.  This is just the
@@ -176,7 +180,7 @@ class TranscriptReportManager: TranscriptTool
 	// Getter and setter for the distinguisher flag
 	//getDistinguisherFlag() { return(_distinguisherFlag == true); }
 	//setDistinguisherFlag() { _distinguisherFlag = true; }
-	getDistinguisherFlag() { return(_distinguisherConfig.check()); }
+	getDistinguisherFlag() { return(distinguisherConfig.check()); }
 
 	// Main lifecycle method, called by our TranscriptTool parent
 	// during afterActionMain()
@@ -191,7 +195,7 @@ class TranscriptReportManager: TranscriptTool
 
 		// Reset the distinguisher flag.
 		//_distinguisherFlag = nil;
-		_distinguisherConfig.clear();
+		distinguisherConfig.clear();
 
 		// If we can't get the granscript for some reason, die
 		// out of shame
@@ -208,17 +212,7 @@ class TranscriptReportManager: TranscriptTool
 
 		// If we have more than one bunch of reports to summarize,
 		// we'll use distinguishers to distinguish them.
-		_distinguisherConfig.setSummarizerVector(vec);
-/*
-		vec.forEach(function(o) {
-			if(!o.summarizer.isImplicit)
-				_distinguisherConfig.
-		});
-		if(n > 1) {
-			//setDistinguisherFlag();
-			_distinguisherConfig.summarizers 
-		}
-*/
+		distinguisherConfig.setSummarizerVector(vec);
 
 		// See if we've got as many summaries as we have objects.
 		// This is for the specific case where all of our reports
@@ -407,7 +401,7 @@ class TranscriptReportManager: TranscriptTool
 			setDistinguisherFlag();
 		}
 */
-		_distinguisherConfig.countDistinguishers(vec);
+		distinguisherConfig.countDistinguishers(vec);
 
 		imp.forEach({ x: _handleImplicit(data.summarizer, x, t) });
 		vec.forEach({ x: _handleSummary(data.summarizer, x, t) });
@@ -469,7 +463,7 @@ class TranscriptReportManager: TranscriptTool
 		//r = createSummaryReport(d, summarizer.summarize(d),
 			//(summarizer.noDistinguisher ? true : nil));
 		if(summarizer.noDistinguisher == true)
-			_distinguisherConfig.noDistinguisher = true;
+			distinguisherConfig.noDistinguisher = true;
 		r = createSummaryReport(d, summarizer.summarize(d));
 
 		r.isFailure = summarizer.isFailure;
