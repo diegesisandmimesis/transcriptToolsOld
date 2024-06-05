@@ -2,6 +2,8 @@
 //
 // distinguisher.t
 //
+//	Modifications to the distinguishers.
+//
 //
 #include <adv3.h>
 #include <en_us.h>
