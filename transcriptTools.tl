@@ -12,7 +12,7 @@ source: reportManager/reportManager.t
 source: reportManager/reportSummary.t
 source: reportManager/reportName.t
 source: reportManager/distinguisherMods.t
-source: reportManager/defaultReports.t
+source: reportManager/defaultSummaries.t
 source: transcriptToolsLister.t
 source: transcriptToolsPreinit.t
 source: transcriptToolsDefaults.t

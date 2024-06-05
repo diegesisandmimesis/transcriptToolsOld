@@ -2,34 +2,13 @@
 //
 // defaultReports.t
 //
+//	Class declarations of default summaries
+//
 //
 #include <adv3.h>
 #include <en_us.h>
 
 #include "transcriptTools.h"
-
-/*
-class ActionSummary: ReportSummary
-	noDistinguisher = true
-	gActionExclude = nil
-	actionInclude = nil
-
-	matchAction(act) {
-		if((gActionExclude != nil) && gAction.ofAnyKind(gActionExclude))
-			return(nil);
-
-		if(inherited(act) == true)
-			return(true);
-
-		if(!gAction.ofAnyKind(action))
-			return(nil);
-
-		return((actionInclude != nil) && act.ofAnyKind(actionInclude));
-	}
-
-	summarize(data) { return('{You/He} <<data.actionClause()>>.</.p>'); }
-;
-*/
 
 class TakeSummary: ActionSummary
 	action = TakeAction
