@@ -34,6 +34,10 @@ class Pebble: Thing '(small) (round) pebble*pebbles' 'pebble'
 		}
 	}
 ;
+class Rock: Thing '(ordinary) rock*rocks' 'rock'
+	"An ordinary rock. "
+	isEquivalent = true
+;
 
 startRoom: Room 'Void' "This is a featureless void.";
 +me: Person;
@@ -46,6 +50,8 @@ startRoom: Room 'Void' "This is a featureless void.";
 ;
 ++Pebble;
 ++Pebble;
++Rock;
++Rock;
 
 modify transcriptTools active = true;
 //modify syslog initFlags = 'transcript';

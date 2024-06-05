@@ -150,6 +150,7 @@ class ReportSummary: TranscriptToolsObject
 		v.forEach({ x: removeReport(x) });
 	}
 
+	getTranscript() { return(reportManager.parentTools.getTranscript()); }
 	forEachReport(fn) { reportManager.parentTools.forEachReport(fn); }
 	removeReport(r) { reportManager.parentTools.removeReport(r); }
 ;
@@ -175,10 +176,49 @@ class ActionSummary: ReportSummary
 	actionInclude = nil
 	defaultProp = nil
 
-	acceptReport(report) {
-		//if((defaultProp != nil) && (report.messageProp_ != defaultProp))
-			//return(nil);
-		return(inherited(report));
+	acceptGroup(grp) {
+		if((defaultProp != nil) && !checkDefaultProp(grp)) {
+			return(nil);
+		}
+
+		return(inherited(grp));
+	}
+
+	checkDefaultProp(grp) {
+		local r, v;
+
+		if(defaultProp == nil)
+			return(nil);
+
+		v = new Vector();
+		grp.forEachReport(function(o) {
+			if(acceptReport(o))
+				v.append(o);
+		});
+		r = nil;
+		v.forEach(function(o) {
+			if((r == nil) && o.ofKind(DefaultCommandReport)) {
+/*
+				if(grp.vec.indexWhich({ x: (
+					(x != o)
+					&& o.isPartOf(x)
+					&& x.ofAnyKind([ FullCommandReport,
+						ImplicitActionAnnouncement ])
+				) }) != nil) {
+				} else if(r == nil) {
+					r = o;
+				}
+*/
+				r = o;
+			} else if(o.ofKind(FullCommandReport)) {
+				r = o;
+			}
+		});
+		if(r == nil) {
+			return(nil);
+		}
+
+		return(r.messageProp_ == defaultProp);
 	}
 
 	matchAction(act) {

@@ -50,6 +50,7 @@ class DistinguisherConfig: object
 	summarizers = 0
 	summarizedDobjCount = 0
 	transcriptDobjCount = 0
+	noDistinguisher = nil
 
 	setSummarizerVector(lst) {
 		local v;
@@ -75,8 +76,10 @@ class DistinguisherConfig: object
 	}
 
 	check() {
-		return((distinguishers > 1) || (summarizers > 1)
-			|| (summarizedDobjCount != transcriptDobjCount));
+		if(((distinguishers > 1) || (summarizers > 1)
+			|| (summarizedDobjCount != transcriptDobjCount)))
+			return(true);
+		return(!noDistinguisher);
 	}
 
 	clear() {
@@ -84,6 +87,7 @@ class DistinguisherConfig: object
 		summarizers = 0;
 		summarizedDobjCount = 0;
 		transcriptDobjCount = 0;
+		noDistinguisher = nil;
 	}
 ;
 
@@ -106,7 +110,7 @@ class TranscriptReportManager: TranscriptTool
 
 	// Boolean flag indicating whether or not to prepend object
 	// announcements to reports
-	_distinguisherFlag = nil
+	//_distinguisherFlag = nil
 
 	// Returns the report manager, if any, in our personal list
 	// that matches the given class.
@@ -309,13 +313,21 @@ class TranscriptReportManager: TranscriptTool
 			o.reports.append(report);
 		});
 */
+		// Go through each report group, generating a list of
+		// candidate summarizers for the reports.
 		forEachReportGroup(function(grp) {
 			if((lst = querySummarizersForGroup(grp)) == nil)
 				return;
+
+			// Now go through each report in the group, and
+			// get a summarizer for each.
 			grp.forEachReport(function(report) {
 				if((s = assignSummarizer(report, lst))
 					== nil)
 					return;
+
+				// If we haven't seen this summarizer before,
+				// create a new summary data object for it
 				if((o = vec.valWhich({
 					x: x.summarizer == s
 				})) == nil) {
@@ -329,24 +341,37 @@ class TranscriptReportManager: TranscriptTool
 		return(vec);
 	}
 
+	// Get a list of candidate summarizers for this report group.
+	// This is for decisions that involve multiple reports.  That
+	// usually happens when a specific action might produce multiple
+	// reports--like a default report and a full report--and we just
+	// want to summarize if there's ONLY a default report.
 	querySummarizersForGroup(grp) {
-		local i, m, r;
+		local i, r;
 
 		r = new Vector();
 
+		// First go through the reports.  If they have direct
+		// objects and the direct objects have report managers,
+		// see if they want to accept the group.  This is for
+		// object-specific report managers.
 		grp.forEachReport(function(o) {
 			if((o.dobj_ == nil) || (o.dobj_.reportManager == nil))
 				return;
-			m = o.dobj_.reportManager;
-			if(m.acceptGroup(grp) == true)
-				m.forEachSummary({ x: r.append(x) });
+			o.dobj_.reportManager.forEachSummary(function(s) {
+				if(s.acceptGroup(grp) == true)
+					r.append(s);
+			});
 		});
 
-
+		// Now we go through "our" report managers and see if any
+		// of them want to accept the group.  This is for the
+		// "built-in" action-based summaries.
 		for(i = 1; i <= _reportManagers.length; i++) {
-			m = _reportManagers[i];
-			if(m.acceptGroup(grp) == true)
-				m.forEachSummary({ x: r.append(x) });
+			_reportManagers[i].forEachSummary(function(s) {
+				if(s.acceptGroup(grp) == true)
+					r.append(s);
+			});
 		}
 
 		return(r);
@@ -441,8 +466,11 @@ class TranscriptReportManager: TranscriptTool
 
 		// Create the CommandReportSummary from the summarizer's
 		// output
-		r = createSummaryReport(d, summarizer.summarize(d),
-			(summarizer.noDistinguisher ? true : nil));
+		//r = createSummaryReport(d, summarizer.summarize(d),
+			//(summarizer.noDistinguisher ? true : nil));
+		if(summarizer.noDistinguisher == true)
+			_distinguisherConfig.noDistinguisher = true;
+		r = createSummaryReport(d, summarizer.summarize(d));
 
 		r.isFailure = summarizer.isFailure;
 		r.dobj_ = nil;
@@ -503,7 +531,7 @@ class TranscriptReportManager: TranscriptTool
 
 		if(!noDist && (getDistinguisherFlag() == true)) {
 			dist = getReportDistinguisher(data.dobj,
-				data.vec.length);
+				data.objs.length);
 			txt.append('<./p0>\n<.announceObj>');
 			txt.append(dist);
 			txt.append(':<./announceObj> <.p0>');
@@ -516,6 +544,9 @@ class TranscriptReportManager: TranscriptTool
 	// Figure out what distinguisher announcement to use.
 	getReportDistinguisher(obj, n) {
 		if(obj == nil)
+			return(nil);
+
+		if(gameMain.useDistinguishersInAnnouncements == nil)
 			return(nil);
 
 		if(obj.reportManager

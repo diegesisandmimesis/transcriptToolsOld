@@ -27,9 +27,16 @@ modify basicDistinguisher
 	canDistinguish(a, b) {
 		local na, nb;
 
+		// If the objects aren't equivalent, then we don't have
+		// to worry about the equivalence keys.
 		if(!(a.isEquivalent && b.isEquivalent))
-			return(nil);
+			return(true);
 
+		// Normal logic is to just compare the equivance keys, but
+		// here we check to see if the objects have reportNames
+		// that aren't the same as the equivalence keys (which
+		// they will be by default) and if so use the reportNames
+		// instead
 		na = ((a.reportName == a.equivalenceKey) ? a.equivalenceKey
 			: a.reportName);
 		nb = ((b.reportName == b.equivalenceKey) ? b.equivalenceKey

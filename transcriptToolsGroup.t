@@ -211,6 +211,26 @@ class ReportGroup: TranscriptToolsObject
 
 		return(nil);
 	}
+
+	getDisplayedReport() {
+		local r;
+
+		r = nil;
+		forEachReport(function(o) {
+			if((
+				(r == nil) &&
+				o.ofAnyKind([ DefaultCommandReport,
+					FullCommandReport ])
+			) || (
+				r.ofKind(DefaultCommandReport) &&
+				o.ofKind(FullCommandReport)
+			)) {
+				r = o;
+			}
+		});
+
+		return(r);
+	}
 ;
 
 // Standalone function that evaluates which reports count as "full" for

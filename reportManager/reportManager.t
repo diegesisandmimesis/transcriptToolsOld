@@ -123,11 +123,15 @@ class ReportManager: TranscriptToolsWidget
 		return(true);
 	}
 
+
+/*
 	getDistinguisherFlag() {
 		return(parentTools ? parentTools._distinguisherFlag == true
 			: nil);
 	}
+*/
 
+/*
 	acceptGroup(grp) {
 		local i;
 
@@ -138,6 +142,7 @@ class ReportManager: TranscriptToolsWidget
 
 		return(nil);
 	}
+*/
 
 	getReportSummarizer(report, lst?) {
 		local i;
