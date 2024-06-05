@@ -316,11 +316,9 @@ class TranscriptReportManager: TranscriptTool
 
 		// Create the CommandReportSummary from the summarizer's
 		// output
-		//r = createSummaryReport(d, summarizer.summarize(d),
-			//(summarizer.noDistinguisher ? true : nil));
 		if(summarizer.noDistinguisher == true)
 			distinguisherConfig.noDistinguisher = true;
-		r = createSummaryReport(d, summarizer.summarize(d));
+		r = createSummaryReport(d, summarizer._summarize(d));
 
 		r.isFailure = summarizer.isFailure;
 		r.dobj_ = nil;
@@ -344,7 +342,7 @@ class TranscriptReportManager: TranscriptTool
 		d = new ReportSummaryData(data.reports);
 
 		// Get the summary text
-		txt = summarizer.summarize(d);
+		txt = summarizer._summarize(d);
 
 		// Identify the first report we just summarized that's
 		// an implicit action announcement

@@ -2,6 +2,13 @@
 //
 // reportSummary.t
 //
+//	Definitions of report summary classes.  This is where the
+//	the actual summary logic goes.
+//
+//	Each ReportSummary instance needs to have a summarize() method
+//	that accepts a ReportSummaryData instance as its argument and
+//	which returns a text string (the summary text).
+//
 #include <adv3.h>
 #include <en_us.h>
 
@@ -9,78 +16,16 @@
 
 class CommandReportSummary: MainCommandReport;
 
-class ReportSummaryData: object
-	vec = nil
-	objs = nil
-	dobj = nil
-	iobj = nil
-	action = nil
-	count = nil
-
-	failures = nil
-	failureCount = nil
-
-	construct(v) {
-		vec = v;
-
-		if((v == nil) || (v.length < 1))
-			return;
-
-		if(gIobj != nil)
-			iobj = gIobj;
-
-		objs = new Vector(v.length);
-		vec.forEach(function(o) {
-			if((action == nil) && o.action_ != nil)
-				action = o.action_;
-			objs.appendUnique(o.dobj_);
-		});
-
-		count = objs.length;
-
-		if(objs.length < 1)
-			return;
-
-		dobj = objs[1];
-		if(dobj)
-			dobj._reportCount = count;
-	}
-
-	listNames() { return(equivalentLister.makeSimpleList(objs)); }
-	listNamesWithAnd() { return(listNames()); }
-	listNamesWithOr() { return(equivalentOrLister.makeSimpleList(objs)); }
-
-	listIobj() { return(iobj ? iobj.theName : nil); }
-
-	getAction() {
-		if(iobj == nil)
-			return(action);
-		if(!action.ofKind(TIAction))
-			vec.forEach(function(o) {
-				if(o.action_ && o.action_.ofKind(TIAction))
-					action = o.action_;
-			});
-		return(action);
-	}
-
-	actionClause() {
-		return(getAction().actionClause(listNames(), listIobj()));
-	}
-	actionClauseWithAnd() { return(actionClause()); }
-	actionClauseWithOr() {
-		return(getAction().actionClause(listNamesWithOr(), listIobj()));
-	}
-;
-
 class ReportSummary: TranscriptToolsObject
-	active = true
+	active = true		// is this summarizer active
 
-	action = nil
+	action = nil		// action being summarized
+	isFailure = nil		// are we summarizing a failed action?
+	isImplicit = nil	// are we summarizing an implicit action?
 
-	reportManager = nil
-	isFailure = nil
-	isImplicit = nil
+	reportManager = nil	// our parent report manager
 
+	// The summary class to use
 	commandReportSummaryClass = CommandReportSummary
 
 	getActive() { return(active == true); }
@@ -98,6 +43,7 @@ class ReportSummary: TranscriptToolsObject
 		return(nil);
 	}
 
+	// Returns boolean true if the given action matches our action
 	matchAction(act) {
 		if(!getActive())
 			return(nil);
@@ -108,6 +54,17 @@ class ReportSummary: TranscriptToolsObject
 		return(act.ofKind(action));
 	}
 
+	// Method to check to see if we want to accept the report group.
+	// This is mostly for ActionSummary, where we do some juggling to
+	// handle action re-mapping and use this to have a summarizer
+	// for TakeAction reject the group if the gAction is TakeFromAction
+	// (because TakeFromAction will end up remapped to TakeAction,
+	// so any transcript involving a >TAKE FROM command will contain
+	// TakeAction reports...so if we want them to be handled by the
+	// TakeFromAction summarizer (instead of the TakeAction summarizer)
+	// we have to have some way of pre-empting acceptReport() below.
+	// All that nonsense being said, in MOST cases we do nothing
+	// here, and leave it all to acceptReport()
 	acceptGroup(grp) { return(getActive()); }
 
 	// Decided whether or no we want to summarize this report
@@ -130,6 +87,7 @@ class ReportSummary: TranscriptToolsObject
 		return(true);
 	}
 
+	// Wrapper for the summarize() method
 	_summarize(data) {
 		reportSummaryMessageParams(data.dobj);
 		return(summarize(data));
@@ -137,8 +95,11 @@ class ReportSummary: TranscriptToolsObject
 
 	summarize(data) {}
 
+	// Stub for when we want to set up message parameter substitutions
+	// for the report summary
 	reportSummaryMessageParams(obj?) {}
 
+/*
 	cleanupReports(action) {
 		local v;
 
@@ -149,90 +110,134 @@ class ReportSummary: TranscriptToolsObject
 		});
 		v.forEach({ x: removeReport(x) });
 	}
+*/
 
 	getTranscript() { return(reportManager.parentTools.getTranscript()); }
 	forEachReport(fn) { reportManager.parentTools.forEachReport(fn); }
 	removeReport(r) { reportManager.parentTools.removeReport(r); }
 ;
 
-class FailureSummary: ReportSummary
-	isFailure = true
-;
+// Class for failure summaries
+class FailureSummary: ReportSummary isFailure = true;
 
+// Class for implicit action summaries
 class ImplicitSummary: ReportSummary
 	isImplicit = true
 
+/*
 	acceptReport(report) {
 		if(inherited(report) != true)
 			return(nil);
 
 		return(report.isActionImplicit() == true);
 	}
+*/
 ;
 
+// Class for group-by-action report summaries, a la combineReports.t
 class ActionSummary: ReportSummary
+	// By default, we prefer to use no distinguishers even when
+	// we're summarizing a bunch of different objects types
 	noDistinguisher = true
+
+	// The include and exclude properties are for handling
+	// action remappings.  See TakeSummary and TakeFromSummary
+	// for examples.  Basically whenever you have an action
+	// remapping (like TakeFromAction being remapped to TakeAction),
+	// the summary for the action mapped TO needs to have a
+	// gActionExclude for what it was mapped FROM, and the summary
+	// for the action mapped FROM needs to have an actionInclude
+	// for what it is mapped TO.  This is so, in this example,
+	// TakeSummary doesn't try to summarize the remapped TakeAction
+	// reports in the transcript for a >TAKE FROM command, and
+	// TakeFromSummary DOES need to grab the TakeAction reports
+	// even though it normally wouldn't
 	gActionExclude = nil
 	actionInclude = nil
-	defaultProp = nil
 
+	// If non-nil, we'll only match reports whose messageProp_
+	// matches matchMessageProp.
+	// This is to avoid clobbering bespoke action responses.  If,
+	// for example, pebble.dobjFor(Take) has an action() method
+	// that sets off an alarm when the player takes the pebble, then
+	// we DON'T want that to get squashed by the summarizer.  So
+	// we put matchMessageProp = &okayTakeMsg on TakeSummary, and
+	// then it'll only summarize TakeAction reports using the
+	// default message text
+	matchMessageProp = nil
+
+	// Logic for checking the matchMessageProp property
 	acceptGroup(grp) {
-		if((defaultProp != nil) && !checkDefaultProp(grp)) {
+		if((matchMessageProp != nil) && !checkMessageProp(grp)) {
 			return(nil);
 		}
 
 		return(inherited(grp));
 	}
 
-	checkDefaultProp(grp) {
+	checkMessageProp(grp) {
 		local r, v;
 
-		if(defaultProp == nil)
+		// Make sure we have a property to check
+		if(matchMessageProp == nil)
 			return(nil);
 
+		// Get all the reports we accept from the group
 		v = new Vector();
 		grp.forEachReport(function(o) {
 			if(acceptReport(o))
 				v.append(o);
 		});
+
+		// Go through the accepted reports and figure out
+		// which one would actually be used:  a default report
+		// if there's no full report, or a full report if one
+		// exists
 		r = nil;
 		v.forEach(function(o) {
-			if((r == nil) && o.ofKind(DefaultCommandReport)) {
-/*
-				if(grp.vec.indexWhich({ x: (
-					(x != o)
-					&& o.isPartOf(x)
-					&& x.ofAnyKind([ FullCommandReport,
-						ImplicitActionAnnouncement ])
-				) }) != nil) {
-				} else if(r == nil) {
-					r = o;
-				}
-*/
+			if((r == nil) && o.ofKind(DefaultCommandReport))
 				r = o;
-			} else if(o.ofKind(FullCommandReport)) {
+			else if(o.ofKind(FullCommandReport))
 				r = o;
-			}
 		});
-		if(r == nil) {
-			return(nil);
-		}
 
-		return(r.messageProp_ == defaultProp);
+		// If we didn't get a report, bail
+		if(r == nil)
+			return(nil);
+
+		// We got a report, so see if its message prop matches
+		// the one we're looking for
+		return(r.messageProp_ == matchMessageProp);
 	}
 
+	// Additional logic for included and excluded actions
 	matchAction(act) {
+		// If we have an excluded gAction, see if the current gAction
+		// matches it
 		if((gActionExclude != nil) && gAction.ofAnyKind(gActionExclude))
 			return(nil);
 
+		// If the base matchAction() logic matches the action,
+		// cool, we don't have to check anything else
 		if(inherited(act) == true)
 			return(true);
 
+		// If we're checking actionInclude, we only want to match
+		// if the gAction is our action (that is, if we're
+		// TakeFromSummary, we only want to continue if gAction
+		// is TakeFromAction)
 		if(!gAction.ofAnyKind(action))
 			return(nil);
 
+		// Now we see if the current action, which we wouldn't
+		// otherwise accept, is our actionInclude.  That
+		// is, if we're TakeFromSummary, we're checking to see
+		// if we're processing a >TAKE FROM command (the gAction
+		// check above) and the current report we're checking is
+		// a TakeAction report (our actionInclude)
 		return((actionInclude != nil) && act.ofAnyKind(actionInclude));
 	}
 
+	// Generic action summary
 	summarize(data) { return('{You/He} <<data.actionClause()>>.</.p>'); }
 ;

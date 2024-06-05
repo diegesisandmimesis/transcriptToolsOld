@@ -13,7 +13,7 @@
 class TakeSummary: ActionSummary
 	action = TakeAction
 	gActionExclude = TakeFromAction
-	defaultProp = &okayTakeMsg
+	matchMessageProp = &okayTakeMsg
 ;
 
 class TakeFromSummary: ActionSummary
@@ -24,11 +24,14 @@ class TakeFromSummary: ActionSummary
 class DropSummary: ActionSummary
 	action = DropAction
 	gActionExclude = PutOnAction
+	matchMessageProp = &okayDropMsg
 ;
+
 class PutOnSummary: ActionSummary
 	action = PutOnAction
 	actionInclude = DropAction
 ;
+
 class PutInSummary: ActionSummary action = PutInAction;
 class PutUnderSummary: ActionSummary action = PutUnderAction;
 class PutBehindSummary: ActionSummary action = PutBehindAction;
