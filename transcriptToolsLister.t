@@ -10,12 +10,46 @@
 
 #include "transcriptTools.h"
 
+// This to allow us to preserve use of "a" for equivalent objects in
+// most listers, while using "the" in action reports when there's only
+// one equivalent object in scope.
+// So, we can have:
+//
+//	Boring Room
+//	This is a boring room.
+//
+//	You see a pebble here.
+//
+//	>TAKE PEBBLE
+//	You take the pebble.
+//
+// ...and then...
+//
+//	Different Room
+//	This is a totally different room.
+//
+//	You see two pebbles here.
+//
+//	>TAKE PEBBLE
+//	You take a pebble.
+//
+modify Thing
+	equivalentListName() {
+		if(isEquivalent &&
+			(getInScopeDistinguisher() != nullDistinguisher))
+			return(aName);
+
+		return(theName);
+	}
+;
+
 // Lister than uses "the" for unique-ish objects and "a" for isEquivalent
 // objects.
-// Same behavior as the lister provided by combineReports.t
+// This is based on the lister provided in combineReports.t, but moves
+// the decision logic to Thing and makes it slightly more elaborate.
 class EquivalentLister: SimpleLister
 	showListItem(obj, options, pov, infoTab) {
-		say(obj.isEquivalent ? obj.aName : obj.theName);
+		say(obj.equivalentListName);
 	}
 ;
 

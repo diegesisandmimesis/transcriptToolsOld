@@ -20,6 +20,7 @@
 //		generate a patch file.  This is NOT code that wants to
 //		be included in a released game.
 //
+//
 #include <adv3.h>
 #include <en_us.h>
 

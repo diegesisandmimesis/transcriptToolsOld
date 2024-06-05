@@ -98,10 +98,12 @@ class ReportSummaryData: object
 			dobj._reportCount = count;
 	}
 
+	getLister(v?) { return((v == true) ? objectLister : equivalentLister); }
+
 	// Convenience methods for listing all our direct objects
 	listNames() { return(equivalentLister.makeSimpleList(objs)); }
 	listNamesWithAnd() { return(listNames()); }
-	listNamesWithOr() { return(equivalentOrLister.makeSimpleList(objs)); }
+	listNamesWithOr() { return(equivalentLister.makeSimpleList(objs)); }
 
 	// Return the name of our iobj if we have one, nil otherwise.
 	// Used in the action clause methods below

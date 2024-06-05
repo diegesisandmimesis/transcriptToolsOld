@@ -28,6 +28,10 @@ function inlineCommand(cmd) {
 	return('<b>&gt;<<toString(cmd).toUpper()>></b>');
 }
 
+modify playerActionMessages
+	cantTakeToggleable = '{You/He} can\'t take {that dobj/him}.'
+;
+
 flowerReportManager: ReportManager reportManagerFor = Flower ;
 +ReportSummary @ExamineAction
 	summarize(data) {
@@ -58,11 +62,21 @@ class RedFlower: Flower color = 'red';
 class BlueFlower: Flower color = 'blue';
 class GreenFlower: Flower color = 'green';
 
-class Pebble: Thing '(small) (round) pebble*pebbles' 'pebble'
+class TakeToggle: Thing
+	takeable = true
+	dobjFor(Take) {
+		verify() {
+			if(takeable != true)
+				illogical(&cantTakeToggleable);
+		}
+	}
+;
+
+class Pebble: TakeToggle '(small) (round) pebble*pebbles' 'pebble'
 	"A small, round pebble. "
 	isEquivalent = true
 ;
-class Rock: Thing '(ordinary) rock*rocks' 'rock'
+class Rock: TakeToggle '(ordinary) rock*rocks' 'rock'
 	"An ordinary rock. "
 	isEquivalent = true
 ;
@@ -96,15 +110,30 @@ centralRoom: Room 'Central Room'
 +me: Person;
 
 roomOne: Room 'Room One'
-	"This is room one.  The central room is to the south.
+	"This is room one.  The central room is to the south and
+	room 1B is to the north.
 	<.p>
 	There's a sign on the wall. "
+	north = room1B
 	south = centralRoom
 ;
 +Sign "If you <<inlineCommand('take all')>> you should get
 	a single report for both objects, instead of a report for each. ";
 +Pebble;
 +Rock;
+
+room1B: Room 'Room 1B'
+	"This is room 1B.  Room one is to the south.
+	<.p>
+	There's a sign on the wall. "
+	south = roomOne
+;
++Sign "If you <<inlineCommand('take all')>> you should get a single
+	failure report for both objects, instead of a separate failure report
+	for each one. ";
++Pebble takeable = nil;
++Pebble takeable = nil;
++Rock takeable = nil;
 
 roomTwo: Room 'Room Two'
 	"This is room two.  The central room is to the west.

@@ -241,3 +241,10 @@ class ActionSummary: ReportSummary
 	// Generic action summary
 	summarize(data) { return('{You/He} <<data.actionClause()>>.</.p>'); }
 ;
+
+class ActionFailureSummary: ActionSummary, FailureSummary
+	summarize(data) {
+		return('<.p>{You/He} can\'t '
+			+ '<<data.actionClauseWithOr()>>.</.p>');
+	}
+;

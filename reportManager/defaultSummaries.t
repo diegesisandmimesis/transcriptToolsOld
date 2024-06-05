@@ -36,24 +36,16 @@ class PutInSummary: ActionSummary action = PutInAction;
 class PutUnderSummary: ActionSummary action = PutUnderAction;
 class PutBehindSummary: ActionSummary action = PutBehindAction;
 
+/*
 class ActionFailureSummary: ActionSummary, FailureSummary
 	summarize(data) {
 		return('<.p>{You/He} can\'t '
 			+ '<<data.actionClauseWithOr()>>.</.p>');
 	}
 ;
+*/
 
 class TakeFailureSummary: ActionFailureSummary action = TakeAction;
-/*
-class TakeFailureSummary: FailureSummary
-	action = TakeAction
-
-	summarize(data) {
-		//return('{You/He} can\'t take <<data.listNamesWithOr()>>. ');
-		return('{You/He} can\'t <<data.actionClauseWithOr()>>. ');
-	}
-;
-*/
 
 class ImplicitTakeSummary: ImplicitSummary
 	action = TakeAction
