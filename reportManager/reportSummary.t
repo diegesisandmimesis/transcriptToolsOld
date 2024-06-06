@@ -166,6 +166,8 @@ class ActionSummary: ReportSummary
 	// default message text
 	matchMessageProp = nil
 
+	matchMessageProps = nil
+
 	// Logic for checking the matchMessageProp property
 	acceptGroup(grp) {
 		if((matchMessageProp != nil) && !checkMessageProp(grp)) {
@@ -179,7 +181,7 @@ class ActionSummary: ReportSummary
 		local i, r, v;
 
 		// Make sure we have a property to check
-		if(matchMessageProp == nil)
+		if((matchMessageProp == nil) && (matchMessageProps == nil))
 			return(nil);
 
 		// Get all the reports we accept from the group
@@ -207,9 +209,9 @@ class ActionSummary: ReportSummary
 
 		// We got a report, so see if its message prop matches
 		// the one we're looking for
-		if(matchMessageProp.ofKind(Collection)) {
-			for(i = 1; i <= matchMessageProp.length; i++) {
-				if(r.messageProp_ == matchMessageProp[i])
+		if(matchMessageProps != nil) {
+			for(i = 1; i <= matchMessageProps.length; i++) {
+				if(r.messageProp_ == matchMessageProps[i])
 					return(true);
 			}
 			return(nil);

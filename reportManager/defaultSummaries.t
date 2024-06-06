@@ -42,7 +42,7 @@ modify playerActionMessages
 
 class TakeFailureSummary: ActionFailureSummary
 	action = TakeAction
-	matchMessageProp = static [
+	matchMessageProps = static [
 		cannotTakeThatMsg,
 		cannotTakeFixtureMsg,
 		cannotTakeImmovableMsg,

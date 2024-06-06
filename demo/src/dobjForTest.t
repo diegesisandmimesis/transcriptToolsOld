@@ -55,7 +55,6 @@ class Flower: Thing 'flower*flowers' 'flower'
 	}
 
 	dobjFor(Examine) {
-		// Summarize the examines.
 		summarize(data) { return('It\'s <<data.listNames()>>. '); }
 	}
 ;
