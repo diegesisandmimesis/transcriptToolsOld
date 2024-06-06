@@ -28,10 +28,10 @@ function inlineCommand(cmd) {
 	return('<b>&gt;<<toString(cmd).toUpper()>></b>');
 }
 
-flowerReportManager: ReportManager reportManagerFor = Flower ;
+flowerReportManager: ReportManager reportManagerFor = Flower;
 +ReportSummary @ExamineAction
 	summarize(data) {
-		return('It\'s <<objectLister.makeSimpleList(data.objs)>>. ');
+		return('It\'s <<data.listNames()>>. ');
 	}
 ;
 
@@ -97,6 +97,22 @@ class TakeToggle: Thing
 	}
 ;
 
+class AlarmItem: Thing
+	dobjFor(Take) {
+		action() {
+			inherited();
+			mainReport('As you pick up {a dobj/him}, an alarm sounds
+				in the distance. ');
+		}
+/*
+		summarize(data) {
+			return('As you pick up <<data.listName()>>, an alarm
+				sounds in the distance. ');
+		}
+*/
+	}
+;
+
 class Pebble: TakeToggle '(small) (round) pebble*pebbles' 'pebble'
 	"A small, round pebble. "
 	isEquivalent = true
@@ -105,6 +121,11 @@ class Rock: TakeToggle '(ordinary) rock*rocks' 'rock'
 	"An ordinary rock. "
 	isEquivalent = true
 ;
+class Stone: AlarmItem, TakeToggle '(unremarkable) stone*stones' 'stone'
+	"An unremarkable stone. "
+	isEquivalent = true
+;
+
 class Box: Container '(wooden) box' 'box'
 	"A wooden box. "
 	dobjFor(Take) {
@@ -209,16 +230,10 @@ room3B: Room 'Room 3B'
 	north = roomThree
 ;
 +Sign;
-+Pebble
-	dobjFor(Take) {
-		action() {
-			inherited();
-			mainReport('As you pick up the pebble, an alarm sounds
-				in the distance. ');
-		}
-	}
-;
-+Pebble;
+//+Pebble;
+//+Pebble;
++Stone;
++Stone;
 +Box;
 
 roomFour: Room 'Room Four'
@@ -236,4 +251,4 @@ happens in room two) is the underlying mechanism used to do the summary. ";
 +BlueShortFlower;
 
 modify transcriptTools active = true;
-//modify syslog initFlags = 'transcript';
+//modify syslog initFlags = 'assignSummarizer';

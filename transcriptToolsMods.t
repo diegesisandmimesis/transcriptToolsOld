@@ -20,6 +20,9 @@ modify CommandReport
 	reportGroup = nil		// group we belong to
 	reportSummarizer = nil		// summarizer for this report
 
+	_summarizerRemoved = nil
+	_rejectedBySummarizer = nil
+
 	construct() {
 		inherited();
 		dobj_ = gDobj;

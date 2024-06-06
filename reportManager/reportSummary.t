@@ -160,8 +160,6 @@ class ActionSummary: ReportSummary
 	matchMessageProp = nil
 	matchMessageProps = nil
 
-	_skippedReports = nil
-
 	// Logic for checking the matchMessageProp property
 	acceptGroup(grp) {
 		if((matchMessageProp != nil) && !checkMessageProp(grp)) {
@@ -212,14 +210,8 @@ class ActionSummary: ReportSummary
 			if(r.messageProp_ == matchMessageProp)
 				return(true);
 		}
-		_addSkippedReport(r);
+		r._rejectedBySummarizer = self;
 		return(nil);
-	}
-
-	_addSkippedReport(report) {
-		if(_skippedReports == nil)
-			_skippedReports = new Vector();
-		_skippedReports.append(report);
 	}
 
 	// Additional logic for included and excluded actions
@@ -266,10 +258,9 @@ class ImplicitSummary: ActionSummary
 	isImplicit = true
 
 	acceptGroup(grp) {
-		// Checking the message prop populates the
-		// _skippedReports vector, which we'll later use to
-		// re-add any non-default reports after the implicit
-		// summary.
+		// Checking the message prop sets the _rejectedBySummarizer
+		// property, which we'll later use to re-add any non-default
+		// reports after the implicit summary.
 		checkMessageProp(grp);
 
 		// We can't use inherited() because ActionSummary does

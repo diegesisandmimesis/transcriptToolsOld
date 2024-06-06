@@ -9,6 +9,18 @@
 //	Enable debugging output by compiling with -d and -D SYSLOG
 //
 //
+// SYSLOG FLAGS
+//
+//	assignSummarizer
+//		shows the summarizer assigned to each report
+//
+//	reportGroup
+//		shows report groups
+//
+//	transcript
+//		outputs details of the transcript before and after
+//		processing
+//
 #include <adv3.h>
 #include <en_us.h>
 
@@ -102,6 +114,19 @@ modify ReportGroup
 		_debug('\tisFailure = <<toString(isFailure)>>', 'reportGroup');
 		vec.forEach({ x: x._debugReport('reportGroup') });
 		_debug('===REPORT GROUP END===', 'reportGroup');
+	}
+;
+
+modify TranscriptReportManager
+	assignSummarizer(report, lst?) {
+		local r;
+
+		r = inherited(report, lst);
+		_debug('assignSummarizer(): <<toString(report)>>',
+			'assignSummarizer');
+		_debug('\t<<toString(r)>>', 'assignSummarizer');
+
+		return(r);
 	}
 ;
 

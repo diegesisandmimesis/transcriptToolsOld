@@ -155,6 +155,10 @@ class TranscriptTool: TranscriptToolsWidget
 	getGroup(report) { return(parentTools.getGroup(report)); }
 	moveGroup(grp, idx?) { return(parentTools.moveGroup(grp, idx)); }
 	moveReport(r, dst?, t?) { return(parentTools.moveReport(r, dst, t)); }
+	insertReport(r, dst?, t?)
+		{ return(parentTools.insertReport(r, dst, t)); }
+	removeReport(r, t?) { return(parentTools.removeReport(r, t)); }
+	removeReports(r, t?) { return(parentTools.removeReports(r, t)); }
 	replaceReports(v0, v1, t?)
 		{ return(parentTools.replaceReports(v0, v1, t)); }
 	getReportGroup(report) { return(parentTools.getReportGroup(report)); }
@@ -393,6 +397,20 @@ class TranscriptTools: TranscriptToolsWidget
 		return(true);
 	}
 
+	// Move the report to the given location in the given transcript.
+	// If no location is given, defaults to end of the transcript.
+	insertReport(report, idx?, t?) {
+		if((t == nil) && ((t = getTranscript()) == nil))
+			return(nil);
+
+		if((idx == nil) || (idx > t.reports_.length + 1))
+			idx = t.reports_.length + 1;
+
+		t.reports_.insertAt(idx, report);
+
+		return(true);
+	}
+
 	// Move the given report.
 	// Optional second arg is the index (in the transcript's report
 	// vector) to move the report to.  If none is given the report
@@ -439,7 +457,24 @@ class TranscriptTools: TranscriptToolsWidget
 		if(report.reportGroup != nil)
 			report.reportGroup.removeReport(report);
 
+		report._summarizerRemoved = true;
+
 		return(true);
+	}
+
+	removeReports(lst, t?) {
+		local n;
+
+		n = 0;
+		if((t == nil) && ((t = getTranscript()) == nil))
+			return(0);
+
+		lst.forEach(function(o) {
+			if(removeReport(o, t))
+				n += 1;
+		});
+
+		return(n);
 	}
 
 	// Replace one or more reports with different reports.
@@ -473,7 +508,8 @@ class TranscriptTools: TranscriptToolsWidget
 			
 		// Add the new reports
 		newReports.forEach(function(o) {
-			t.reports_.insertAt(idx, o);
+			insertReport(o, idx);
+			//t.reports_.insertAt(idx, o);
 			idx += 1;
 		});
 
@@ -481,7 +517,10 @@ class TranscriptTools: TranscriptToolsWidget
 		// Done AFTER adding the new reports because removing them
 		// might change the transcript enough that the index we
 		// computed above would have to be re-computed
-		oldReports.forEach({ x: removeReport(x, t) });
+		oldReports.forEach(function(o) {
+			removeReport(o, t);
+			o._summarizerRemoved = newReports[newReports.length];
+		});
 
 		return(true);
 	}

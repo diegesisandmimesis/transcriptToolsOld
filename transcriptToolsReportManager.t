@@ -197,6 +197,22 @@ class TranscriptReportManager: TranscriptTool
 		return(vec);
 	}
 
+	querySummarizersForReport(report) {
+		local r;
+
+		r = new Vector();
+
+		if(report == nil)
+			return(r);
+
+		forEachSummarizerFor(report.dobj_, function(s) {
+			if(s.acceptReport(report))
+				r.append(s);
+		});
+
+		return(r);
+	}
+
 	// Get a list of candidate summarizers for this report group.
 	// This is for decisions that involve multiple reports.  That
 	// usually happens when a specific action might produce multiple
@@ -339,7 +355,7 @@ class TranscriptReportManager: TranscriptTool
 	// Second arg is a DistinguisherData instance.
 	// Third arg is the transcript.
 	_handleImplicit(summarizer, data, t) {
-		local d, idx, r, txt;
+		local d, idx, r, txt, v;
 
 		//if(!summarizer.checkData(data))
 			//return;
@@ -365,20 +381,66 @@ class TranscriptReportManager: TranscriptTool
 			= '<.p0>\n<.assume><<toString(txt)>><./assume>\n';
 		r.messageProp_ = nil;
 
-		// Remove our reports from the transcript
-		data.reports.forEach({ x: t.reports_.removeElement(x) });
+		// Go through our reports, remembering the ones
+		// we rejected (which will be the non-default action reports)
+		v = new Vector();
+		data.reports.forEach(function(o) {
+			if(o._rejectedBySummarizer == summarizer)
+				v.append(o);
+		});
+
+		// Remove the reports we're summarizing
+		removeReports(data.reports, t);
 
 		// Insert the updated implicit announcement at the location
 		// where our first report was
-		t.reports_.insertAt(idx, r);
-		if(summarizer._skippedReports != nil) {
-			summarizer._skippedReports.forEach(function(o) {
-				t.reports_.removeElement(o);
-				idx = t.reports_.indexOf(r) + 1;
-				t.reports_.insertAt(idx, o);
-			});
-		}
+		insertReport(r, idx, t);
+
+		// Re-insert the non-default action reports, right after
+		// our implicit action summary.
+		v.forEach(function(o) {
+			idx = t.reports_.indexOf(r) + 1;
+			insertReport(o, idx);
+		});
+		//summarizeNonDefaultImplicit(summarizer, t);
 	}
+
+	getReportsRejectedBy(summarizer) {
+		local v;
+
+		v = new Vector();
+aioSay('\nsummarizer = <<toString(summarizer)>>\n ');
+		forEachReport(function(o) {
+aioSay('\n\trejected = <<toString(o._rejectedBySummarizer)>>\n ');
+			if(o._rejectedBySummarizer == summarizer)
+				v.append(o);
+		});
+
+		return(v);
+	}
+
+/*
+	summarizeNonDefaultImplicit(summarizer, t) {
+		local lst, s;
+
+		if((summarizer == nil) || (summarizer.nonDefaultReports == nil))
+			return;
+
+		lst = new Vector();
+		summarizer.forEachNonDefaultReport(function(o) {
+			lst.appendAll(querySummarizersForReport(o));
+		});
+		lst = lst.subset({ x: !x.ofKind(ImplicitSummary) });
+		summarizer.forEachNonDefaultReport(function(o) {
+			s = assignSummarizer(o, lst);
+		});
+
+		if(s == nil)
+			return;
+
+		_handleSummary(s, summarizer.nonDefaultReports, t);
+	}
+*/
 
 	// Create the summary report object.
 	// First arg is the summary data.
@@ -417,5 +479,19 @@ class TranscriptReportManager: TranscriptTool
 		return(obj.getBestDistinguisher(gAction
 			.getResolvedObjList(DirectObject))
 			.reportName(obj, n));
+	}
+
+	forEachReportManager(fn) {
+		if(_reportManagers == nil)
+			return;
+		_reportManagers.forEach({ x: (fn)(x) });
+	}
+
+	forEachSummarizerFor(obj, fn) {
+		if(obj == nil)
+			return;
+		if(obj.reportManager)
+			obj.reportManager.forEachSummary({ x: (fn)(x) });
+		forEachReportManager({ x: x.forEachSummary({ s: (fn)(s) }) });
 	}
 ;
