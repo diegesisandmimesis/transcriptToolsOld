@@ -58,6 +58,35 @@ class RedFlower: Flower color = 'red';
 class BlueFlower: Flower color = 'blue';
 class GreenFlower: Flower color = 'green';
 
+class ShortFlower: Thing '(short) flower*flowers' 'flower'
+	"A short <<color>> flower. "
+
+	isEquivalent = true
+	reportName = 'flower'
+	color = nil
+
+	initializeThing() {
+		setColor();
+		inherited();
+	}
+
+	setColor() {
+		if(color == nil) color = 'colorless';
+		cmdDict.addWord(self, color, &adjective);
+		name = 'short ' + color + ' flower';
+	}
+
+	dobjFor(Examine) {
+		summarize(data) {
+			return('It\'s <<data.listNames()>>. ');
+		}
+	}
+;
+
+class RedShortFlower: ShortFlower color = 'red';
+class BlueShortFlower: ShortFlower color = 'blue';
+class GreenShortFlower: ShortFlower color = 'green';
+
 class TakeToggle: Thing
 	takeable = true
 	dobjFor(Take) {
@@ -178,6 +207,12 @@ roomFour: Room 'Room Four'
 	There's a sign on the wall. "
 	east = centralRoom
 ;
-+Sign;
++Sign "The parent class of the flowers in this room use a self-summarizer.  If
+you do a <<inlineCommand('examine flowers')>> you'll get a single summary
+report.  The only interesting thing (as opposed to the similar stuff that
+happens in room two) is the underlying mechanism used to do the summary. ";
++RedShortFlower;
++GreenShortFlower;
++BlueShortFlower;
 
 modify transcriptTools active = true;
