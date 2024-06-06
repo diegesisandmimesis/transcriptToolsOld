@@ -184,6 +184,7 @@ roomThree: Room 'Room Three'
 	<.p>
 	There's a sign on the wall. "
 	north = centralRoom
+	south = room3B
 ;
 +Sign "If you <<inlineCommand('put all pebbles in vase')>> you should get both
 	an implicit announcement for taking the pebbles and a
@@ -201,6 +202,25 @@ roomThree: Room 'Room Three'
 ++Pebble;
 +Vase;
 
+room3B: Room 'Room 3B'
+	"This is room 3B.  Room three is to the north.
+	<.p>
+	There's a sign on the wall. "
+	north = roomThree
+;
++Sign;
++Pebble
+	dobjFor(Take) {
+		action() {
+			inherited();
+			mainReport('As you pick up the pebble, an alarm sounds
+				in the distance. ');
+		}
+	}
+;
++Pebble;
++Box;
+
 roomFour: Room 'Room Four'
 	"This is room four.  The central room is to the east.
 	<.p>
@@ -216,3 +236,4 @@ happens in room two) is the underlying mechanism used to do the summary. ";
 +BlueShortFlower;
 
 modify transcriptTools active = true;
+//modify syslog initFlags = 'transcript';

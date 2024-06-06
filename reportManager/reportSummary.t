@@ -99,6 +99,13 @@ class ReportSummary: TranscriptToolsObject
 	// for the report summary
 	reportSummaryMessageParams(obj?) {}
 
+	checkData(data) {
+		if((data == nil) || (data.reports == nil))
+			return(nil);
+		if(reportManager == nil)
+			return(nil);
+		return(data.reports.length >= reportManager.minSummaryLength);
+	}
 /*
 	cleanupReports(action) {
 		local v;
@@ -119,20 +126,6 @@ class ReportSummary: TranscriptToolsObject
 
 // Class for failure summaries
 class FailureSummary: ReportSummary isFailure = true;
-
-// Class for implicit action summaries
-class ImplicitSummary: ReportSummary
-	isImplicit = true
-
-/*
-	acceptReport(report) {
-		if(inherited(report) != true)
-			return(nil);
-
-		return(report.isActionImplicit() == true);
-	}
-*/
-;
 
 // Class for group-by-action report summaries, a la combineReports.t
 class ActionSummary: ReportSummary
@@ -165,8 +158,9 @@ class ActionSummary: ReportSummary
 	// then it'll only summarize TakeAction reports using the
 	// default message text
 	matchMessageProp = nil
-
 	matchMessageProps = nil
+
+	_skippedReports = nil
 
 	// Logic for checking the matchMessageProp property
 	acceptGroup(grp) {
@@ -214,10 +208,18 @@ class ActionSummary: ReportSummary
 				if(r.messageProp_ == matchMessageProps[i])
 					return(true);
 			}
-			return(nil);
 		} else {
-			return(r.messageProp_ == matchMessageProp);
+			if(r.messageProp_ == matchMessageProp)
+				return(true);
 		}
+		_addSkippedReport(r);
+		return(nil);
+	}
+
+	_addSkippedReport(report) {
+		if(_skippedReports == nil)
+			_skippedReports = new Vector();
+		_skippedReports.append(report);
 	}
 
 	// Additional logic for included and excluded actions
@@ -258,3 +260,21 @@ class ActionFailureSummary: ActionSummary, FailureSummary
 			+ '<<data.actionClauseWithOr()>>.</.p>');
 	}
 ;
+
+// Class for implicit action summaries
+class ImplicitSummary: ActionSummary
+	isImplicit = true
+
+	acceptGroup(grp) {
+		// Checking the message prop populates the
+		// _skippedReports vector, which we'll later use to
+		// re-add any non-default reports after the implicit
+		// summary.
+		checkMessageProp(grp);
+
+		// We can't use inherited() because ActionSummary does
+		// its own message prop checking
+		return(getActive());
+	}
+;
+

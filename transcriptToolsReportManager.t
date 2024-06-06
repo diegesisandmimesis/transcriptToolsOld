@@ -311,6 +311,9 @@ class TranscriptReportManager: TranscriptTool
 	_handleSummary(summarizer, data, t) {
 		local d, r;
 
+		if(!summarizer.checkData(data))
+			return;
+
 		// Create a SummaryData instance from the reports
 		d = new ReportSummaryData(data.reports);
 
@@ -337,6 +340,9 @@ class TranscriptReportManager: TranscriptTool
 	// Third arg is the transcript.
 	_handleImplicit(summarizer, data, t) {
 		local d, idx, r, txt;
+
+		//if(!summarizer.checkData(data))
+			//return;
 
 		// Create a SummaryData instance from the reports
 		d = new ReportSummaryData(data.reports);
@@ -365,6 +371,13 @@ class TranscriptReportManager: TranscriptTool
 		// Insert the updated implicit announcement at the location
 		// where our first report was
 		t.reports_.insertAt(idx, r);
+		if(summarizer._skippedReports != nil) {
+			summarizer._skippedReports.forEach(function(o) {
+				t.reports_.removeElement(o);
+				idx = t.reports_.indexOf(r) + 1;
+				t.reports_.insertAt(idx, o);
+			});
+		}
 	}
 
 	// Create the summary report object.

@@ -54,7 +54,7 @@ class TakeFailureSummary: ActionFailureSummary
 
 class ImplicitTakeSummary: ImplicitSummary
 	action = TakeAction
-
+	matchMessageProp = &okayTakeMsg
 	summarize(data) { return('first taking <<data.listNames()>>'); }
 ;
 

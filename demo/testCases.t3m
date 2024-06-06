@@ -9,3 +9,4 @@
 -lib ../transcriptTools
 -source src/testCases.t
 #-source extensions/combineReports.t
+-source reflect.t
