@@ -8,4 +8,4 @@
 -lib syslog/syslog
 -lib ../transcriptTools
 -source src/testCases.t
--source reflect.t
+#-source extensions/combineReports.t

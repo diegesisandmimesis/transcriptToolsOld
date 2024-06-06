@@ -176,7 +176,7 @@ class ActionSummary: ReportSummary
 	}
 
 	checkMessageProp(grp) {
-		local r, v;
+		local i, r, v;
 
 		// Make sure we have a property to check
 		if(matchMessageProp == nil)
@@ -207,7 +207,15 @@ class ActionSummary: ReportSummary
 
 		// We got a report, so see if its message prop matches
 		// the one we're looking for
-		return(r.messageProp_ == matchMessageProp);
+		if(matchMessageProp.ofKind(Collection)) {
+			for(i = 1; i <= matchMessageProp.length; i++) {
+				if(r.messageProp_ == matchMessageProp[i])
+					return(true);
+			}
+			return(nil);
+		} else {
+			return(r.messageProp_ == matchMessageProp);
+		}
 	}
 
 	// Additional logic for included and excluded actions

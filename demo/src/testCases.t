@@ -28,10 +28,6 @@ function inlineCommand(cmd) {
 	return('<b>&gt;<<toString(cmd).toUpper()>></b>');
 }
 
-modify playerActionMessages
-	cantTakeToggleable = '{You/He} can\'t take {that dobj/him}.'
-;
-
 flowerReportManager: ReportManager reportManagerFor = Flower ;
 +ReportSummary @ExamineAction
 	summarize(data) {
@@ -67,7 +63,7 @@ class TakeToggle: Thing
 	dobjFor(Take) {
 		verify() {
 			if(takeable != true)
-				illogical(&cantTakeToggleable);
+				illogical(&cannotTakeThatMsg);
 		}
 	}
 ;
@@ -184,3 +180,4 @@ roomFour: Room 'Room Four'
 ;
 +Sign;
 
+modify transcriptTools active = true;

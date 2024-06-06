@@ -36,16 +36,21 @@ class PutInSummary: ActionSummary action = PutInAction;
 class PutUnderSummary: ActionSummary action = PutUnderAction;
 class PutBehindSummary: ActionSummary action = PutBehindAction;
 
-/*
-class ActionFailureSummary: ActionSummary, FailureSummary
-	summarize(data) {
-		return('<.p>{You/He} can\'t '
-			+ '<<data.actionClauseWithOr()>>.</.p>');
-	}
+modify playerActionMessages
+	cannotTakeThatMsg = '{You/he} {can\'t} take {that dobj/him}. '
 ;
-*/
 
-class TakeFailureSummary: ActionFailureSummary action = TakeAction;
+class TakeFailureSummary: ActionFailureSummary
+	action = TakeAction
+	matchMessageProp = static [
+		cannotTakeThatMsg,
+		cannotTakeFixtureMsg,
+		cannotTakeImmovableMsg,
+		cannotTakeHeavyMsg,
+		cannotTakeActorMsg,
+		cannotTakePersonMsg
+	]
+;
 
 class ImplicitTakeSummary: ImplicitSummary
 	action = TakeAction
