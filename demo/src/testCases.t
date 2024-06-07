@@ -104,12 +104,11 @@ class AlarmItem: Thing
 			mainReport('As you pick up {a dobj/him}, an alarm sounds
 				in the distance. ');
 		}
-/*
+
 		summarize(data) {
-			return('As you pick up <<data.listName()>>, an alarm
-				sounds in the distance. ');
+			return('As you pick up the <<data.listNames()>>, an
+				alarm sounds in the distance. ');
 		}
-*/
 	}
 ;
 
@@ -224,14 +223,28 @@ roomThree: Room 'Room Three'
 +Vase;
 
 room3B: Room 'Room 3B'
-	"This is room 3B.  Room three is to the north.
+	"This is room 3B.  Room three is to the north, 3C is to the south.
 	<.p>
 	There's a sign on the wall. "
 	north = roomThree
+	south = room3C
 ;
 +Sign;
 //+Pebble;
 //+Pebble;
++Stone;
++Stone;
++Box;
+
+room3C: Room 'Room 3C'
+	"This is room 3C.  Room 3B is to the north.
+	<.p>
+	There's a sign on the wall. "
+	north = room3B
+;
++Sign;
++Pebble;
++Pebble;
 +Stone;
 +Stone;
 +Box;

@@ -197,7 +197,7 @@ class TranscriptReportManager: TranscriptTool
 		return(vec);
 	}
 
-	querySummarizersForReport(report) {
+	querySummarizerForReport(report) {
 		local r;
 
 		r = new Vector();
@@ -355,7 +355,7 @@ class TranscriptReportManager: TranscriptTool
 	// Second arg is a DistinguisherData instance.
 	// Third arg is the transcript.
 	_handleImplicit(summarizer, data, t) {
-		local d, idx, r, txt, v;
+		local d, idx, r, txt;
 
 		//if(!summarizer.checkData(data))
 			//return;
@@ -381,14 +381,6 @@ class TranscriptReportManager: TranscriptTool
 			= '<.p0>\n<.assume><<toString(txt)>><./assume>\n';
 		r.messageProp_ = nil;
 
-		// Go through our reports, remembering the ones
-		// we rejected (which will be the non-default action reports)
-		v = new Vector();
-		data.reports.forEach(function(o) {
-			if(o._rejectedBySummarizer == summarizer)
-				v.append(o);
-		});
-
 		// Remove the reports we're summarizing
 		removeReports(data.reports, t);
 
@@ -396,22 +388,101 @@ class TranscriptReportManager: TranscriptTool
 		// where our first report was
 		insertReport(r, idx, t);
 
-		// Re-insert the non-default action reports, right after
-		// our implicit action summary.
-		v.forEach(function(o) {
-			idx = t.reports_.indexOf(r) + 1;
-			insertReport(o, idx);
-		});
-		//summarizeNonDefaultImplicit(summarizer, t);
+		// See if we want to re-insert any non-default implicit
+		// action reports
+		_handleImplicitRejected(summarizer, r, data, t);
 	}
 
+	// See if we have any non-default implicit action reports and
+	// if so, we insert them back into the transcript right after
+	// our implicit action summary.  Then we check to see if
+	// the non-default reports have an object-specific summarizer.
+	// And if they have one, use it.
+	_handleImplicitRejected(summarizer, report, data, t) {
+		local d, idx, s, v;
+
+		// Build a vector of all of the reports the summarizer
+		// didn't want to touch.  Since we're here in the middle
+		// of handling an implicit action summary, this means
+		// these are implicit action reports that are "non-default";
+		// they have a custom action message.
+		v = new Vector();
+		data.reports.forEach(function(o) {
+			if(o._rejectedBySummarizer == summarizer)
+				v.append(o);
+		});
+
+		// If we don't have any rejected reports, we have nothing
+		// else to do
+		if(v.length < 1)
+			return;
+
+		// "report" is the implicit action summary, so
+		// we want to start inserting rejected action
+		// reports right after it
+		idx = t.reports_.indexOf(report);
+
+		// Now we go through the rejected reports and re-insert
+		// them into the transcript.  We also get the summarizer
+		// (we only check for one, maybe a misfeature---are there
+		// cases where a single implicit action can involve additional
+		// nested actions?)
+		s = nil;
+		v.forEach(function(o) {
+
+			// Re-insert the rejected report into the transcript
+			idx += 1;
+			insertReport(o, idx);
+
+			// If we don't already have a summarizer for the
+			// rejected reports, check for one
+			if(s == nil) {
+				s = getSummarizerFor(o, function(rs) {
+					// CONFUSING:  Because ImplicitAction
+					//	is a subclass of ActionSummary
+					//	we don't have to explicitly
+					//	check for it
+					return(!rs.ofKind(ActionSummary));
+				}, true);
+			}
+		});
+
+		// No summarizer, no summary
+		if(s == nil)
+			return;
+
+		// Create a DistinguisherData instance containing the
+		// rejected reports
+		d = new DistinguisherData(nil);
+		d.reports.appendAll(v);
+
+		// Have the summarizer summarize the rejected reports
+		_handleSummary(s, d, t);
+	}
+
+	getSummarizerFor(report, fn?, ignoreImplicit?) {
+		local i, m, s;
+
+		if(report == nil)
+			return(nil);
+		if(report.dobj_ && ((m = report.dobj_.reportManager) != nil)) {
+			if((s = m.getSummarizerFor(report, fn, ignoreImplicit)) != nil)
+				return(s);
+		}
+		for(i = 1; i <= _reportManagers.length; i++) {
+			m = _reportManagers[i];
+			if((s = m.getSummarizerFor(report, fn, ignoreImplicit)) != nil)
+				return(s);
+		}
+
+		return(nil);
+	}
+/*
 	getReportsRejectedBy(summarizer) {
 		local v;
 
 		v = new Vector();
-aioSay('\nsummarizer = <<toString(summarizer)>>\n ');
 		forEachReport(function(o) {
-aioSay('\n\trejected = <<toString(o._rejectedBySummarizer)>>\n ');
 			if(o._rejectedBySummarizer == summarizer)
 				v.append(o);
 		});
@@ -419,7 +490,6 @@ aioSay('\n\trejected = <<toString(o._rejectedBySummarizer)>>\n ');
 		return(v);
 	}
 
-/*
 	summarizeNonDefaultImplicit(summarizer, t) {
 		local lst, s;
 

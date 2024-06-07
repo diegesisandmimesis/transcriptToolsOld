@@ -64,7 +64,7 @@ class ImplicitTakeSummary: ImplicitSummary
 class SelfSummary: ReportSummary
 	active = true
 
-	acceptReport(report) {
+	acceptReport(report, ignoreImplicit?) {
 		local t;
 
 		// First, we recapitulate many but not all of the stock
@@ -73,7 +73,7 @@ class SelfSummary: ReportSummary
 			return(nil);
 		if(report.isFailure != isFailure)
 			return(nil);
-		if(report.isActionImplicit() != isImplicit)
+		if(!ignoreImplicit && (report.isActionImplicit() != isImplicit))
 			return(nil);
 
 		// Make sure the report has what we need.

@@ -216,6 +216,20 @@ class ReportManager: TranscriptToolsWidget
 
 	forEachSummary(fn) {  _reportManagerSummaries.forEach({ x: fn(x) }); }
 	forEachReport(fn) { parentTools.forEachReport(fn); }
+
+	getSummarizerFor(report, fn?, ignoreImplicit?) {
+		local i, s;
+
+		for(i = 1; i <= _reportManagerSummaries.length; i++) {
+			s = _reportManagerSummaries[i];
+			if((dataType(fn) != TypeNil) && !(fn)(s))
+				continue;
+			if(s.acceptReport(report, ignoreImplicit))
+				return(s);
+		}
+
+		return(nil);
+	}
 ;
 
 // General non-object-specific report manager.

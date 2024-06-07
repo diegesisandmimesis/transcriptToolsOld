@@ -68,7 +68,7 @@ class ReportSummary: TranscriptToolsObject
 	acceptGroup(grp) { return(getActive()); }
 
 	// Decided whether or no we want to summarize this report
-	acceptReport(report) {
+	acceptReport(report, ignoreImplicit?) {
 		if(!getActive())
 			return(nil);
 
@@ -81,7 +81,7 @@ class ReportSummary: TranscriptToolsObject
 		if(report.isFailure != isFailure)
 			return(nil);
 
-		if(report.isActionImplicit() != isImplicit)
+		if(!ignoreImplicit && (report.isActionImplicit() != isImplicit))
 			return(nil);
 
 		return(true);
