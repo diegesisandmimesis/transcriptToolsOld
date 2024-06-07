@@ -328,7 +328,7 @@ class TranscriptReportManager: TranscriptTool
 		local d, r;
 
 		if(!summarizer.checkData(data))
-			return;
+			return(nil);
 
 		// Create a SummaryData instance from the reports
 		d = new ReportSummaryData(data.reports);
@@ -348,6 +348,8 @@ class TranscriptReportManager: TranscriptTool
 
 		// Replace the reports with the summary
 		replaceReports(data.reports, r);
+
+		return(r);
 	}
 
 	// Create a single implicit action summary report.
@@ -399,7 +401,7 @@ class TranscriptReportManager: TranscriptTool
 	// the non-default reports have an object-specific summarizer.
 	// And if they have one, use it.
 	_handleImplicitRejected(summarizer, report, data, t) {
-		local d, idx, s, v;
+		local d, idx, r, s, v;
 
 		// Build a vector of all of the reports the summarizer
 		// didn't want to touch.  Since we're here in the middle
@@ -457,7 +459,12 @@ class TranscriptReportManager: TranscriptTool
 		d.reports.appendAll(v);
 
 		// Have the summarizer summarize the rejected reports
-		_handleSummary(s, d, t);
+		if((r = _handleSummary(s, d, t)) != nil) {
+			// Add a report separator after the re-inserted
+			// rejected reports.
+			idx = t.reports_.indexOf(r);
+			insertReport(new GroupSeparatorMessage(r), idx + 1);
+		}
 	}
 
 	getSummarizerFor(report, fn?, ignoreImplicit?) {

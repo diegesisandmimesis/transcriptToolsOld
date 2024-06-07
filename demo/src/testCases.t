@@ -125,11 +125,14 @@ class Stone: AlarmItem, TakeToggle '(unremarkable) stone*stones' 'stone'
 	isEquivalent = true
 ;
 
+class Anchor: Thing '(rusty) anchor' 'rusty anchor'
+	"Hm. Rusty anchor?  Rusty anchor!  Yeah, I think I know that one. "
+	dobjFor(Take) { verify() { illogical(&cannotTakeThatMsg); } }
+;
+
 class Box: Container '(wooden) box' 'box'
 	"A wooden box. "
-	dobjFor(Take) {
-		verify() { illogical('{You/He} can\'t take <<theName>>. '); }
-	}
+	dobjFor(Take) { verify() { illogical(&cannotTakeThatMsg); } }
 ;
 class Vase: Container '(delicate) vase' 'vase'
 	"A delicate vase. "
@@ -221,6 +224,9 @@ roomThree: Room 'Room Three'
 ++Pebble;
 ++Pebble;
 +Vase;
++Anchor;
++Stone;
++Stone;
 
 room3B: Room 'Room 3B'
 	"This is room 3B.  Room three is to the north, 3C is to the south.
@@ -265,3 +271,4 @@ happens in room two) is the underlying mechanism used to do the summary. ";
 
 modify transcriptTools active = true;
 //modify syslog initFlags = 'assignSummarizer';
+modify syslog initFlags = 'transcript';
